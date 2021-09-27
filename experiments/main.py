@@ -1,4 +1,6 @@
+from pathlib import Path
 import json
+from youtube_dl import YoutubeDL, downloader
 
 
 # reading label descriptions
@@ -42,5 +44,30 @@ with open("./audioset/test_metadata.csv", "r") as f:
         line = f.readline()
 
 
+# download audio
+def download():
+    categories = ["Laughter", "Chatter"]
 
-print(test_metadata["Laughter"])
+    for c in categories:
+        Path("./audio/" + c).mkdir(parents=True, exist_ok=True)
+        downloader = YoutubeDL({ 'format':'m4a', 
+                                    "outtmpl": "./audio/" + c + "/%(id)s.%(ext)s" })
+        fails = 0
+        for m in train_metadata[c]:
+            if not Path("./audio/" + c +  + m[0] + ".m4a").exists():
+                try:
+                    downloader.extract_info("https://youtu.be/" + m[0])
+                except:
+                    fails += 1
+                    print(f"Download failed, total failures in category {c} is {fails}.")
+
+# crop the audio to desired length
+# def crop():
+
+
+
+# uncomment the following line to download raw audio files
+# download()
+
+
+
