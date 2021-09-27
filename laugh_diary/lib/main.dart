@@ -1,4 +1,41 @@
+/*
+ * Copyright 2018, 2019, 2020 Dooboolab.
+ *
+ * This file is part of Flutter-Sound.
+ *
+ * Flutter-Sound is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
+ * the Free Software Foundation.
+ *
+ * Flutter-Sound is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+/*
+ * This is an example showing how to record to a Dart Stream.
+ * It writes all the recorded data from a Stream to a File, which is completely stupid:
+ * if an App wants to record something to a File, it must not use Streams.
+ *
+ * The real interest of recording to a Stream is for example to feed a
+ * Speech-to-Text engine, or for processing the Live data in Dart in real time.
+ *
+ */
+
+///
+const int tSampleRate = 44000;
+typedef _Fn = void Function();
 
 void main() {
   runApp(const MyApp());
@@ -13,103 +50,221 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: RecordToStreamExample(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+/// Example app.
+class RecordToStreamExample extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _RecordToStreamExampleState createState() => _RecordToStreamExampleState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _RecordToStreamExampleState extends State<RecordToStreamExample> {
+  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
+  bool _mPlayerIsInited = false;
+  bool _mRecorderIsInited = false;
+  bool _mplaybackReady = false;
+  String? _mPath;
+  StreamSubscription? _mRecordingDataSubscription;
 
-  void _incrementCounter() {
+  Future<void> _openRecorder() async {
+    var status = await Permission.microphone.request();
+    print(status);
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Microphone permission not granted');
+    }
+    await _mRecorder!.openAudioSession();
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _mRecorderIsInited = true;
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Be careful : openAudioSession return a Future.
+    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    _mPlayer!.openAudioSession().then((value) {
+      setState(() {
+        _mPlayerIsInited = true;
+      });
+    });
+    _openRecorder();
+  }
+
+  @override
+  void dispose() {
+    stopPlayer();
+    _mPlayer!.closeAudioSession();
+    _mPlayer = null;
+
+    stopRecorder();
+    _mRecorder!.closeAudioSession();
+    _mRecorder = null;
+    super.dispose();
+  }
+
+  Future<IOSink> createFile() async {
+    var tempDir = await getTemporaryDirectory();
+    _mPath = '${tempDir.path}/flutter_sound_example.pcm';
+    var outputFile = File(_mPath!);
+    if (outputFile.existsSync()) {
+      await outputFile.delete();
+    }
+    return outputFile.openWrite();
+  }
+
+  // ----------------------  Here is the code to record to a Stream ------------
+
+  Future<void> record() async {
+    assert(_mRecorderIsInited && _mPlayer!.isStopped);
+    var sink = await createFile();
+    var recordingDataController = StreamController<Food>();
+    _mRecordingDataSubscription =
+        recordingDataController.stream.listen((buffer) {
+      if (buffer is FoodData) {
+        sink.add(buffer.data!);
+      }
+    });
+    await _mRecorder!.startRecorder(
+      toStream: recordingDataController.sink,
+      codec: Codec.pcm16,
+      numChannels: 1,
+      sampleRate: tSampleRate,
+    );
+    setState(() {});
+  }
+  // --------------------- (it was very simple, wasn't it ?) -------------------
+
+  Future<void> stopRecorder() async {
+    await _mRecorder!.stopRecorder();
+    if (_mRecordingDataSubscription != null) {
+      await _mRecordingDataSubscription!.cancel();
+      _mRecordingDataSubscription = null;
+    }
+    _mplaybackReady = true;
+  }
+
+  _Fn? getRecorderFn() {
+    if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
+      return null;
+    }
+    return _mRecorder!.isStopped
+        ? record
+        : () {
+            stopRecorder().then((value) => setState(() {}));
+          };
+  }
+
+  void play() async {
+    assert(_mPlayerIsInited &&
+        _mplaybackReady &&
+        _mRecorder!.isStopped &&
+        _mPlayer!.isStopped);
+    await _mPlayer!.startPlayer(
+        fromURI: _mPath,
+        sampleRate: tSampleRate,
+        codec: Codec.pcm16,
+        numChannels: 1,
+        whenFinished: () {
+          setState(() {});
+        }); // The readability of Dart is very special :-(
+    setState(() {});
+  }
+
+  Future<void> stopPlayer() async {
+    await _mPlayer!.stopPlayer();
+  }
+
+  _Fn? getPlaybackFn() {
+    if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
+      return null;
+    }
+    return _mPlayer!.isStopped
+        ? play
+        : () {
+            stopPlayer().then((value) => setState(() {}));
+          };
+  }
+
+  // ----------------------------------------------------------------------------------------------------------------------
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    Widget makeBody() {
+      return Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(3),
+            height: 80,
+            width: double.infinity,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Color(0xFFFAF0E6),
+              border: Border.all(
+                color: Colors.indigo,
+                width: 3,
+              ),
+            ),
+            child: Row(children: [
+              ElevatedButton(
+                onPressed: getRecorderFn(),
+                //color: Colors.white,
+                //disabledColor: Colors.grey,
+                child: Text(_mRecorder!.isRecording ? 'Stop' : 'Record'),
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Text(_mRecorder!.isRecording
+                  ? 'Recording in progress'
+                  : 'Recorder is stopped'),
+            ]),
+          ),
+          Container(
+            margin: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(3),
+            height: 80,
+            width: double.infinity,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Color(0xFFFAF0E6),
+              border: Border.all(
+                color: Colors.indigo,
+                width: 3,
+              ),
+            ),
+            child: Row(children: [
+              ElevatedButton(
+                onPressed: getPlaybackFn(),
+                //color: Colors.white,
+                //disabledColor: Colors.grey,
+                child: Text(_mPlayer!.isPlaying ? 'Stop' : 'Play'),
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Text(_mPlayer!.isPlaying
+                  ? 'Playback in progress'
+                  : 'Player is stopped'),
+            ]),
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Colors.blue,
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Record to Stream ex.'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: makeBody(),
     );
   }
 }
