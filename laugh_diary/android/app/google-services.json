@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "264848727003",
+    "project_id": "laughdetectorbackend",
+    "storage_bucket": "laughdetectorbackend.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264848727003:android:25254a312369e15f8c65fe",
+        "android_client_info": {
+          "package_name": "com.example.laugh_diary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "264848727003-m7lielajpktu5rv4ls2embn4n41pb57g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5HK-P8FqWn8Vha-h4RYu-VU_b74xm8Mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "264848727003-m7lielajpktu5rv4ls2embn4n41pb57g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
