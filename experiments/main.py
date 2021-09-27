@@ -1,6 +1,12 @@
+import os
 from pathlib import Path
 import json
 from youtube_dl import YoutubeDL, downloader
+from pydub import AudioSegment
+
+
+# program config
+categories = ["Laughter", "Chatter"]
 
 
 # reading label descriptions
@@ -46,28 +52,45 @@ with open("./audioset/test_metadata.csv", "r") as f:
 
 # download audio
 def download():
-    categories = ["Laughter", "Chatter"]
-
     for c in categories:
         Path("./audio/" + c).mkdir(parents=True, exist_ok=True)
         downloader = YoutubeDL({ 'format':'m4a', 
                                     "outtmpl": "./audio/" + c + "/%(id)s.%(ext)s" })
         fails = 0
         for m in train_metadata[c]:
-            if not Path("./audio/" + c +  + m[0] + ".m4a").exists():
+            if not Path("./audio/{c}/{m[0]}.m4a").exists():
                 try:
-                    downloader.extract_info("https://youtu.be/" + m[0])
+                    downloader.extract_info(f"https://youtu.be/{m[0]}")
                 except:
                     fails += 1
                     print(f"Download failed, total failures in category {c} is {fails}.")
 
 # crop the audio to desired length
-# def crop():
+def crop():
+    for c in categories:
+        Path("./processed/" + c).mkdir(parents=True, exist_ok=True)
+        fnames = os.listdir(f"./audio/{c}")
+        for n in fnames:
+            print(f"Cropping {n} in {c}.")
+            audio = AudioSegment.from_file(f"./audio/{c}/{n}")
+            yid = n.rstrip(".m4a")
+            start = 0
+            end = 0
+            for m in train_metadata[c]:
+                if m[0] == yid:
+                    start = m[1] * 1000
+                    end = m[2] * 1000
+            subsequence = audio[start:end]
+            subsequence.export(f"./processed/{c}/{n}.mp3", format="mp3")
+    return
 
 
 
 # uncomment the following line to download raw audio files
 # download()
+
+# uncomment the following line to crop audio files
+# crop()
 
 
 
