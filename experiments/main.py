@@ -246,6 +246,7 @@ def cnn_spectro():
                         validation_data=(X_test, y_test),
                         callbacks=cb)
     
+ 
 def cnn_mfcc():
     Path("./model/CNN").mkdir(parents=True, exist_ok=True)
     Path("./checkpoints/CNN").mkdir(parents=True, exist_ok=True)
@@ -254,13 +255,13 @@ def cnn_mfcc():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
     
     model = models.Sequential()
-    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=X[0].shape))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', input_shape=X[0].shape))
     model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(256, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(256, (3, 3), activation='relu'))
     model.add(layers.Flatten())
-    model.add(layers.Dense(100, activation='relu'))
+    model.add(layers.Dense(200, activation='relu'))
     model.add(layers.Dense(2, activation="softmax"))
 
     model.summary()
@@ -279,8 +280,8 @@ def cnn_mfcc():
 
     history = model.fit(X_train, 
                         y_train, 
-                        epochs=50, 
-                        batch_size=30,
+                        epochs=30, 
+                        batch_size=10,
                         validation_data=(X_test, y_test),
                         callbacks=cb)
     
