@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_sound: ^8.3.9
   permission_handler: ^8.1.6
+  firebase_core:
+  firebase_analytics:
+  firebase_auth:
+  cloud_firestore:
 
 dev_dependencies:
   flutter_test:
