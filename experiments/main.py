@@ -261,7 +261,7 @@ def cnn_mfcc():
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(256, (3, 3), activation='relu'))
     model.add(layers.Flatten())
-    model.add(layers.Dense(200, activation='relu'))
+    model.add(layers.Dense(300, activation='relu'))
     model.add(layers.Dense(2, activation="softmax"))
 
     model.summary()
