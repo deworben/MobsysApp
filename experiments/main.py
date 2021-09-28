@@ -194,6 +194,7 @@ def svm_mfcc():
 
 def cnn_spectro():
     Path("./model/CNN").mkdir(parents=True, exist_ok=True)
+    Path("./checkpoints/CNN").mkdir(parents=True, exist_ok=True)
 
     X, y = load_spectrogram()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
@@ -210,22 +211,32 @@ def cnn_spectro():
     model.add(layers.Conv2D(512, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(512, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(512, (3, 3), activation='relu'))
     model.add(layers.Flatten())
     model.add(layers.Dense(100, activation='relu'))
     model.add(layers.Dense(2, activation="softmax"))
 
     model.summary()
+    mid = time.time_ns()
+    model.save(f"./model/CNN/{mid}")
     
+    cb = tf.keras.callbacks.ModelCheckpoint(
+            filepath=f"./checkpoints/CNN/{mid}/weights", 
+            verbose=1, 
+            save_weights_only=True,
+            save_freq="epoch")
+
     model.compile(optimizer= optimizers.Adam(learning_rate=0.001),
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
               metrics=['accuracy'])
 
-    history = model.fit(X_train, y_train, epochs=100, batch_size=30,
-                    validation_data=(X_test, y_test))
+    history = model.fit(X_train, 
+                        y_train, 
+                        epochs=50, 
+                        batch_size=30,
+                        validation_data=(X_test, y_test),
+                        callbacks=cb)
     
-    model.save(f"./model/CNN/{time.time_ns()}")
+    
 
     
 # uncomment the following line to download raw audio files
