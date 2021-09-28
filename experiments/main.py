@@ -1,12 +1,22 @@
 import os
 from pathlib import Path
 import json
+from scipy.ndimage.measurements import label
+from tensorflow.python.keras import activations
 from youtube_dl import YoutubeDL
 from pydub import AudioSegment
 import librosa
 import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.model_selection import cross_val_score
+from collections import Counter
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models, optimizers
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+import time
 
 
 # BUG:
@@ -17,7 +27,7 @@ import matplotlib.pyplot as plt
 
 
 # program configurations
-categories = ["Laughter", "Chatter"]
+categories = ["Laughter", "Chatter", "Narration, monologue"]
 
 
 # reading label descriptions
@@ -68,8 +78,18 @@ def download():
         downloader = YoutubeDL({ 'format':'m4a', 
                                     "outtmpl": "./audio/" + c + "/%(id)s.%(ext)s" })
         fails = 0
+        fnames = os.listdir(f"./audio/{c}")
         for m in train_metadata[c]:
-            if not Path("./audio/{c}/{m[0]}.m4a").exists():
+            fname = m[0] + ".m4a"
+            if fname not in fnames:
+                try:
+                    downloader.extract_info(f"https://youtu.be/{m[0]}")
+                except:
+                    fails += 1
+                    print(f"Download failed, total failures in category {c} is {fails}.")
+        for m in test_metadata[c]:
+            fname = m[0] + ".m4a"
+            if fname not in fnames:
                 try:
                     downloader.extract_info(f"https://youtu.be/{m[0]}")
                 except:
@@ -128,7 +148,84 @@ def spectrogram():
                 json.dump(librosa.amplitude_to_db(abs(X)).tolist(), f)
 
 
+def load_mfcc():
+    features = []
+    labels = []
+    min_len = 1000 
+    for c in categories:
+        for n in os.listdir(f"./mfcc/{c}"):
+            with open(f"./mfcc/{c}/{n}", "r+") as f:
+                feature = np.array(json.load(f))
+                min_len = min(min_len, feature.shape[1])
+                features.append(feature)
+                labels.append(c == "Laughter")
+    features = [ f[:,:min_len] for f in features ]
+    return np.array(features), labels
 
+
+def load_spectrogram():
+    features = []
+    labels = []
+    min_len = 1000 
+    min_max_scaler = preprocessing.MinMaxScaler()
+    for c in categories:
+        for n in os.listdir(f"./spectrogram/{c}"):
+            with open(f"./spectrogram/{c}/{n}", "r+") as f:
+                feature = np.array(json.load(f), dtype=np.float32)
+                min_len = min(min_len, feature.shape[1])
+                features.append(feature)
+                labels.append(c=="Laughter")
+    features = [ f[:,:min_len] for f in features ]
+    features = [ min_max_scaler.fit_transform(f) for f in features]
+    features = np.expand_dims(np.array(features), axis=3)
+    print(features)
+    return features, np.array(labels)
+
+
+def svm_mfcc():
+    Path("./model/SVM").mkdir(parents=True, exist_ok=True)
+    X, y = load_mfcc()
+    print(Counter(y))
+    X = np.reshape(X, (len(X), -1))
+    clf = svm.SVC()
+    print(cross_val_score(clf, X, y, cv=10, scoring="precision"))
+    print(cross_val_score(clf, X, y, cv=10, scoring="recall"))
+    print(cross_val_score(clf, X, y, cv=10))
+
+def cnn_spectro():
+    Path("./model/CNN").mkdir(parents=True, exist_ok=True)
+
+    X, y = load_spectrogram()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+
+    model = models.Sequential()
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(1025, 406, 1)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(256, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(512, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(512, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(512, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(512, (3, 3), activation='relu'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(100, activation='relu'))
+    model.add(layers.Dense(2, activation="softmax"))
+
+    model.compile(optimizer= optimizers.Adam(learning_rate=0.001),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+              metrics=['accuracy'])
+
+    history = model.fit(X_train, y_train, epochs=100, batch_size=30,
+                    validation_data=(X_test, y_test))
+    
+    model.save(f"./model/CNN/{time.time_ns()}")
+
+    
 # uncomment the following line to download raw audio files
 # download()
 
@@ -140,3 +237,12 @@ def spectrogram():
 
 # uncomment the following line to cache spectrogram features
 # spectrogram()
+
+
+# load_mfcc()
+# g, l = load_spectrogram()
+
+
+# svm_mfcc()
+
+cnn_spectro()
