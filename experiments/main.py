@@ -216,6 +216,8 @@ def cnn_spectro():
     model.add(layers.Dense(100, activation='relu'))
     model.add(layers.Dense(2, activation="softmax"))
 
+    model.summary()
+    
     model.compile(optimizer= optimizers.Adam(learning_rate=0.001),
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
               metrics=['accuracy'])
