@@ -197,6 +197,7 @@ def svm_mfcc():
     print(Counter(y))
     X = np.reshape(X, (len(X), -1))
     clf = svm.SVC()
+    
     print(cross_val_score(clf, X, y, cv=10, scoring="precision"))
     print(cross_val_score(clf, X, y, cv=10, scoring="recall"))
     print(cross_val_score(clf, X, y, cv=10))
