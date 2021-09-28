@@ -22,7 +22,7 @@ from sklearn.metrics import classification_report
 
 
 # BUG:
-# 1. Currently only train set is being used.
+# None Yet
 
 # NOTE:
 # 1. We may train on other categories of sound in the future.
