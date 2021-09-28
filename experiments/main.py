@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from scipy.ndimage.measurements import label
 from tensorflow.python.keras import activations
+from tensorflow.python.keras.metrics import Precision, Recall
 from youtube_dl import YoutubeDL
 from pydub import AudioSegment
 import librosa
@@ -17,6 +18,7 @@ from tensorflow.keras import datasets, layers, models, optimizers
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import time
+from sklearn.metrics import classification_report
 
 
 # BUG:
@@ -152,6 +154,7 @@ def load_mfcc():
     features = []
     labels = []
     min_len = 1000 
+    min_max_scaler = preprocessing.MinMaxScaler()
     for c in categories:
         for n in os.listdir(f"./mfcc/{c}"):
             with open(f"./mfcc/{c}/{n}", "r+") as f:
@@ -160,7 +163,13 @@ def load_mfcc():
                 features.append(feature)
                 labels.append(c == "Laughter")
     features = [ f[:,:min_len] for f in features ]
-    return np.array(features), labels
+    features = [ min_max_scaler.fit_transform(f) for f in features]
+    return np.array(features), np.array(labels)
+
+
+def load_mfcc_nn():
+    f, l = load_mfcc()
+    return np.expand_dims(f, axis=3), l
 
 
 def load_spectrogram():
@@ -192,6 +201,7 @@ def svm_mfcc():
     print(cross_val_score(clf, X, y, cv=10, scoring="recall"))
     print(cross_val_score(clf, X, y, cv=10))
 
+
 def cnn_spectro():
     Path("./model/CNN").mkdir(parents=True, exist_ok=True)
     Path("./checkpoints/CNN").mkdir(parents=True, exist_ok=True)
@@ -200,7 +210,7 @@ def cnn_spectro():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
     model = models.Sequential()
-    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(1025, 406, 1)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=X[0].shape))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(128, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
@@ -236,7 +246,47 @@ def cnn_spectro():
                         validation_data=(X_test, y_test),
                         callbacks=cb)
     
+def cnn_mfcc():
+    Path("./model/CNN").mkdir(parents=True, exist_ok=True)
+    Path("./checkpoints/CNN").mkdir(parents=True, exist_ok=True)
+
+    X, y = load_mfcc_nn()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
     
+    model = models.Sequential()
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=X[0].shape))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(256, (3, 3), activation='relu'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(100, activation='relu'))
+    model.add(layers.Dense(2, activation="softmax"))
+
+    model.summary()
+    mid = time.time_ns()
+    model.save(f"./model/CNN/{mid}")
+    
+    cb = tf.keras.callbacks.ModelCheckpoint(
+            filepath=f"./checkpoints/CNN/{mid}/weights", 
+            verbose=1, 
+            save_weights_only=True,
+            save_freq="epoch")
+
+    model.compile(optimizer= optimizers.Adam(learning_rate=0.001),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+              metrics=['accuracy'])
+
+    history = model.fit(X_train, 
+                        y_train, 
+                        epochs=50, 
+                        batch_size=30,
+                        validation_data=(X_test, y_test),
+                        callbacks=cb)
+    
+    y_pred = model.predict(X_test)
+    y_pred_bool = np.argmax(y_pred, axis=1)
+    print(classification_report(y_test, y_pred_bool))
 
     
 # uncomment the following line to download raw audio files
@@ -258,4 +308,6 @@ def cnn_spectro():
 
 # svm_mfcc()
 
-cnn_spectro()
+# cnn_spectro()
+
+cnn_mfcc()
