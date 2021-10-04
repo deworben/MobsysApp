@@ -2,4 +2,7 @@ audio
 processed
 checkpoints
 model
+test
+train
+legacy
 .DS_Store
