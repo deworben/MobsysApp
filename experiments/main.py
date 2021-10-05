@@ -4,7 +4,11 @@ from librosa.feature.spectral import mfcc
 import numpy as np
 import os
 from collections import Counter
+from tensorflow import keras
 from tensorflow.keras import layers, models, optimizers, losses
+from tensorflow import lite
+import time
+
 
 
 def train_CNN(X, y):
@@ -38,10 +42,10 @@ def train_CNN(X, y):
 
     return model
 
-def load_mfcc(fp, seg_len=2):
+def load_mfcc(fp, seg_len=1):
     seq, sr = librosa.load(fp)
-    n_segs = int(seq.shape[0]/(seg_len*20000))
-    seq = seq[:n_segs*20000]
+    n_segs = int(seq.shape[0]/(seg_len*10000))
+    seq = seq[:int(n_segs*10000)]
     frames = np.split(seq, n_segs)
     mfccs = [librosa.feature.mfcc(f, sr=sr) for f in frames]
     return mfccs
@@ -76,6 +80,7 @@ def load_train():
     y = y[P]
     return X, y
 
+
 def load_test(fp):
     X = load_mfcc(fp)
     X = np.array(X)
@@ -83,10 +88,25 @@ def load_test(fp):
     return X
 
 
+def export(clf, fp):
+    tflite_path = "./tflite_models/" + fp
+    cvt = lite.TFLiteConverter.from_keras_model(clf)
+    M = cvt.convert()
+    with open(tflite_path, "wb") as f:
+        f.write(M)
+
+
 X_train, y_train = load_train()
-X_test = load_test("./test/LAUGH.m4a")
+X_test = load_test("./test/Mixed.m4a")
 print(Counter(y_train))
+
 N = train_CNN(X_train, y_train)
 P = np.argmax(N.predict(X_test), axis=-1)
 print(P)
+
+model_id = str(time.time_ns())
+export(N, model_id)
+print(f"TFLITE model saved at ./tflite_model/{model_id}")
+
+
 
