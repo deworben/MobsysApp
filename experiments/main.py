@@ -92,6 +92,7 @@ def export(clf, fp):
     tflite_path = "./tflite_models/" + fp
     cvt = lite.TFLiteConverter.from_keras_model(clf)
     M = cvt.convert()
+    
     with open(tflite_path, "wb") as f:
         f.write(M)
 
@@ -104,7 +105,7 @@ N = train_CNN(X_train, y_train)
 P = np.argmax(N.predict(X_test), axis=-1)
 print(P)
 
-model_id = str(time.time_ns())
+model_id = str(time.time_ns()+".tflite")
 export(N, model_id)
 print(f"TFLITE model saved at ./tflite_model/{model_id}")
 
