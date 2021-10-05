@@ -19,8 +19,7 @@ def train_CNN(X, y):
     y_test = y[train_count:]
 
     model = models.Sequential()
-    model.add(layers.Conv2D(
-        128, (3, 3), activation='relu', input_shape=X[0].shape))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', input_shape=X[0].shape))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(256, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
@@ -103,11 +102,12 @@ print(Counter(y_train))
 
 N = train_CNN(X_train, y_train)
 P = np.argmax(N.predict(X_test), axis=-1)
-print(P)
+for t, p in zip(range(0, 100, 2), P):
+    print(f"TIME: {t} - {t+2}\t\tLABEL: {p}")
 
-model_id = str(time.time_ns()+".tflite")
+print(" ".join(map(str, P.tolist())))
+
+model_id = str(time.time_ns()) +".tflite"
 export(N, model_id)
 print(f"TFLITE model saved at ./tflite_model/{model_id}")
-
-
 
