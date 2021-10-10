@@ -22,3 +22,5 @@ def datalink():
     print(np.sum(np.array(request.get_json()["mfcc"])))
     count += 1
     return "Access"
+
+app.run(host="0.0.0.0")
