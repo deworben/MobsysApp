@@ -8,7 +8,7 @@ from tensorflow import keras
 from tensorflow.keras import layers, models, optimizers, losses
 from tensorflow import lite
 import time
-
+import json
 
 
 def train_CNN(X, y):
@@ -43,17 +43,19 @@ def train_CNN(X, y):
 
 def load_mfcc(fp, seg_len=1):
     seq, sr = librosa.load(fp)
+    # print(sr)
     n_segs = int(seq.shape[0]/(seg_len*10000))
     seq = seq[:int(n_segs*10000)]
-    frames = np.split(seq, n_segs)
+    frames = np.array(np.split(seq, n_segs))    
     mfccs = [librosa.feature.mfcc(f, sr=sr) for f in frames]
+    print(np.array(mfccs).shape)
     return mfccs
 
 
 def load_train():
-    true_folder = "./train/laugh"
-    false_folder = "./train/talk"
-
+    true_folder = "./audio/train/laugh"
+    false_folder = "./audio/train/talk"
+    
     X = []
     y = []
 
@@ -79,6 +81,35 @@ def load_train():
     y = y[P]
     return X, y
 
+def load_train_android():
+    true_folder = "./train/laugh"
+    false_folder = "./train/talk"
+
+    X = []
+    y = []
+
+    for n in os.listdir(true_folder):
+        with open(true_folder + "/" + n, "r") as f:
+            mfccs = [json.load(f)]
+            X += mfccs
+            y.append(1)
+
+    for n in os.listdir(false_folder):
+        with open(false_folder + "/" + n, "r") as f:
+            mfccs = [json.load(f)]
+            X += mfccs
+            y.append(0)
+
+    X = np.array(X)
+    y = np.array(y)
+    print(X)
+    X = np.expand_dims(X, 3)
+    P = np.random.permutation(len(X))
+    X = X[P]
+    y = y[P]
+    print(X.shape)
+    return X, y
+
 
 def load_test(fp):
     X = load_mfcc(fp)
@@ -86,6 +117,19 @@ def load_test(fp):
     X = np.expand_dims(X, 3)
     return X
 
+def load_test_android():
+    test_folder = "./test"
+
+    X = []
+    for n in os.listdir(test_folder):
+        with open(test_folder + "/" + n, "r") as f:
+            mfccs = [json.load(f)]
+            X += mfccs
+
+    X = np.array(X)
+    X = np.expand_dims(X, 3)
+    print(X.shape)
+    return X
 
 def export(clf, fp):
     tflite_path = "./tflite_models/" + fp
@@ -96,8 +140,10 @@ def export(clf, fp):
         f.write(M)
 
 
-X_train, y_train = load_train()
-X_test = load_test("./test/Mixed.m4a")
+X_train, y_train = load_train_android()
+X_test = load_test_android()
+# X_train, y_train = load_train()
+# X_test = load_test("./test/Mixed.m4a")
 print(Counter(y_train))
 
 N = train_CNN(X_train, y_train)
