@@ -17,7 +17,9 @@ def datalink():
     if count >= 50:
         print("Done")
         return "Done"
-    with open(f"./test/{count}.mfcc", "w+") as f:
+    #with open(f"./test/{count}.mfcc", "w+") as f:
+    #with open(f"./train/laugh/{count}.mfcc", "w+") as f:
+    with open(f"./train/talk/{count}.mfcc", "w+") as f:
         json.dump(request.get_json()["mfcc"], f)
     print(np.sum(np.array(request.get_json()["mfcc"])))
     count += 1
