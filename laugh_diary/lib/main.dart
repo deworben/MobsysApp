@@ -301,32 +301,24 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
                   //     .listSync(); // list all files in temp dir
                   File file = File(targetFile);
 
-                  print("a");
                   await FirebaseAppCheck.instance
                       .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
-                  print("b");
                   FirebaseAuth auth = FirebaseAuth.instance;
-                  print("c");
                   UserCredential userCredential =
                       await FirebaseAuth.instance.signInAnonymously();
-                  print("d");
 
                   firebase_storage.FirebaseStorage storage =
                       firebase_storage.FirebaseStorage.instance;
-                  print("e");
 
                   try {
-                    print("f");
                     final metadata = firebase_storage.SettableMetadata(
                         contentType: 'audio/pcm',
                         customMetadata: {'picked-file-path': file.path});
 
-                    print("g");
                     // await firebase_storage.FirebaseStorage.instance
                     //     .ref('randomFile.pcm')
                     //     .putFile(file, metadata);
                     await storage.ref('randomFile.pcm').putFile(file, metadata);
-                    print("h");
                   } on firebase_core.FirebaseException catch (e) {
                     // e.g, e.code == 'canceled'
                     print("Exception occurred when uploading! $e");
