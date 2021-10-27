@@ -36,15 +36,22 @@ class _MyHomePageState extends State<MyHomePage> {
   var logger = Logger();
   var status = "Initial";
   var result = "None";
+  var consistentResult = "None";
   var detector = LaughDetector();
 
-  callback(bool laughing, double confidence) async {
+  callback(bool laughing, double confidence, bool consistentLaughing) async {
       logger.i(laughing);
       logger.i(confidence);
+      logger.i(consistentLaughing);
       if (laughing) {
         result = "Laughing";
       } else {
         result = "Talking";
+      }
+      if (consistentLaughing) {
+        consistentResult = "Consistent";
+      } else {
+        consistentResult = "Not Consistent";
       }
       setState(() {});
   }
@@ -103,6 +110,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               result,
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            Text(
+              consistentResult,
               style: Theme.of(context).textTheme.bodyText1,
             ),
           ],

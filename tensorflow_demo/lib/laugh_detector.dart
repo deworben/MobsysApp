@@ -20,23 +20,25 @@ class LaughDetector {
   FlutterSoundPlayer? player;
   FlutterSoundRecorder? recorder;
   StreamSubscription? audioSub;
-  void Function(bool, double) callback = (y, p) => {};
+  void Function(bool, double, bool) callback = (y, p, c) => {};
   var buffer = List<int>.from([]);
   var prevBuffers = List<List<int>>.from([]);
-  var samplingRate = 44100;
+  var prevPredictions = List<int>.from([]);
+  var samplingRate = 44100; // DO NOT CHANGE
   var recorderOpened = false;
   var playerOpened = false;
   var logLevel = Level.debug;
   var logger = Logger();
-  var maxSamples = 44100;
+  var maxSamples = 44100; // DO NOT CHANGE
   var fileName = "recording";
   var dio = Dio();
   var training = false;
   var historySize = 10;
+  var laughRatioThreshold = 0.5;
 
   LaughDetector();
 
-  Future<void> init(final void Function(bool, double) cb) async {
+  Future<void> init(final void Function(bool, double, bool) cb) async {
     var status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Microphone permission not granted');
@@ -89,6 +91,7 @@ class LaughDetector {
           // limit historic buffer size
           while (prevBuffers.length > historySize) {
             prevBuffers.removeAt(0);
+            prevPredictions.removeAt(0);
           }
 
           // save to file
@@ -137,8 +140,17 @@ class LaughDetector {
             logger.d(laughing);
             logger.d(confidence);
           }
+          prevPredictions.add(laughing ? 1 : 0);
 
-          callback(laughing, confidence);
+          // verify the user is consistently laughing
+          var consistentLaughing = false;
+          var laughCount = prevPredictions.reduce((a, b) => a + b);
+          if (laughCount > laughRatioThreshold * historySize) {
+            consistentLaughing = true;
+          }
+
+          // execute call back to deliver result
+          callback(laughing, confidence, consistentLaughing);
         }
       }
     });
