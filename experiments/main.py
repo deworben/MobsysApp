@@ -89,12 +89,16 @@ def load_train_android():
     y = []
 
     for n in os.listdir(true_folder):
+        if "mfcc" not in n:
+                continue
         with open(true_folder + "/" + n, "r") as f:
             mfccs = [json.load(f)]
             X += mfccs
             y.append(1)
 
     for n in os.listdir(false_folder):
+        if "mfcc" not in n:
+                continue
         with open(false_folder + "/" + n, "r") as f:
             mfccs = [json.load(f)]
             X += mfccs
@@ -121,7 +125,12 @@ def load_test_android():
     test_folder = "./test"
 
     X = []
-    for n in os.listdir(test_folder):
+    dirs = os.listdir(test_folder)
+    dirs.sort()
+    for n in dirs:
+        print(n)
+        if "mfcc" not in n:
+                continue
         with open(test_folder + "/" + n, "r") as f:
             mfccs = [json.load(f)]
             X += mfccs
