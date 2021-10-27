@@ -22,7 +22,7 @@ class LaughDetector {
   StreamSubscription? audioSub;
   void Function(bool, double) callback = (y, p) => {};
   var buffer = List<int>.from([]);
-  var prevBuffer = List<int>.from([]);
+  var prevBuffers = List<List<int>>.from([]);
   var samplingRate = 44100;
   var recorderOpened = false;
   var playerOpened = false;
@@ -32,6 +32,7 @@ class LaughDetector {
   var fileName = "recording";
   var dio = Dio();
   var training = false;
+  var historySize = 10;
 
   LaughDetector();
 
@@ -74,15 +75,21 @@ class LaughDetector {
     }
     // reset buffer
     buffer = List.from([]);
-    prevBuffer = List.from([]);
+    prevBuffers = List.from([]);
     var controller = StreamController<Food>();
     audioSub = controller.stream.listen((segment) async {
       if (segment is FoodData) {
         buffer.addAll(segment.data!.toList());
         if (buffer.length > maxSamples) {
           // buffer swap
-          prevBuffer = buffer.take(maxSamples).toList();
+          var lastBuffer = buffer.take(maxSamples).toList();
+          prevBuffers.add(buffer);
           buffer = List.from([]);
+
+          // limit historic buffer size
+          while (prevBuffers.length > historySize) {
+            prevBuffers.removeAt(0);
+          }
 
           // save to file
           var tempDir = await getTemporaryDirectory();
@@ -91,12 +98,14 @@ class LaughDetector {
             await outFile.delete();
           }
           IOSink fileSink = outFile.openWrite();
-          fileSink.add(Uint8List.fromList(prevBuffer));
+          for (var b in prevBuffers) {
+            fileSink.add(Uint8List.fromList(b));
+          }
           fileSink.close();
 
           // convert pcm to mfcc
           var samples =
-              Uint8List.fromList(prevBuffer).buffer.asInt16List().toList();
+              Uint8List.fromList(lastBuffer).buffer.asInt16List().toList();
           var samplesCvt = samples.map((e) => e.toDouble()).toList();
           var features =
               MFCC.mfccFeats(samplesCvt, samplingRate, 1024, 512, 512, 20, 20);
@@ -167,12 +176,5 @@ class LaughDetector {
       return;
     }
     await player!.stopPlayer();
-  }
-
-  void dummy() async {
-    // test conversion
-    // var testCvt = Uint8List.fromList(prevSamples).buffer.asInt16List();
-    // var testRvt = testCvt.buffer.asUint8List();
-    //
   }
 }
