@@ -27,23 +27,25 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_core/firebase_core.dart' as firebase_core;
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-/*
- * This is an example showing how to record to a Dart Stream.
- * It writes all the recorded data from a Stream to a File, which is completely stupid:
- * if an App wants to record something to a File, it must not use Streams.
- *
- * The real interest of recording to a Stream is for example to feed a
- * Speech-to-Text engine, or for processing the Live data in Dart in real time.
- *
- */
-
-///
-const int tSampleRate = 44000;
-typedef _Fn = void Function();
+import 'service/recorder.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class MyColor extends MaterialStateColor {
+  const MyColor() : super(_defaultColor);
+
+  static const int _defaultColor = 0xcafefeed;
+  static const int _pressedColor = 0xdeadbeef;
+
+  @override
+  Color resolve(Set<MaterialState> states) {
+    if (states.contains(MaterialState.pressed)) {
+      return const Color(_pressedColor);
+    }
+    return const Color(_defaultColor);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -69,153 +71,24 @@ class RecordToStreamExample extends StatefulWidget {
 }
 
 class _RecordToStreamExampleState extends State<RecordToStreamExample> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
-  bool _mPlayerIsInited = false;
-  bool _mRecorderIsInited = false;
-  bool _mplaybackReady = false;
-  String? _mPath;
-  StreamSubscription? _mRecordingDataSubscription;
-  var soundQ = Queue<FoodData>();
   final Future<firebase_core.FirebaseApp> _initialization =
       firebase_core.Firebase.initializeApp();
+  Recorder recorder = Recorder();
 
-  Future<void> _openRecorder() async {
-    var status = await Permission.microphone.request();
-    print(status);
-    if (status != PermissionStatus.granted) {
-      throw RecordingPermissionException('Microphone permission not granted');
-    }
-    await _mRecorder!.openAudioSession();
-    setState(() {
-      _mRecorderIsInited = true;
-    });
-  }
+  bool weAreRecording = false;
+  bool weArePlaying = false;
 
   @override
   void initState() {
     super.initState();
-
-    // await firebase_core.Firebase.initializeApp();
-    // firebase_storage.FirebaseStorage storage =
-    //     firebase_storage.FirebaseStorage.instance;
-    // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
-    _mPlayer!.openAudioSession().then((value) {
-      setState(() {
-        _mPlayerIsInited = true;
-      });
-    });
-    _openRecorder();
+    recorder.init();
   }
 
   @override
   void dispose() {
-    stopPlayer();
-    _mPlayer!.closeAudioSession();
-    _mPlayer = null;
-
-    stopRecorder();
-    _mRecorder!.closeAudioSession();
-    _mRecorder = null;
+    recorder.dispose();
     super.dispose();
   }
-
-  Future<IOSink> createFile() async {
-    var tempDir = await getTemporaryDirectory();
-    _mPath = '${tempDir.path}/flutter_sound_example.pcm';
-    var outputFile = File(_mPath!);
-    if (outputFile.existsSync()) {
-      await outputFile.delete();
-    }
-    return outputFile.openWrite();
-  }
-
-  // ----------------------  Here is the code to record to a Stream ------------
-
-  Future<void> record() async {
-    assert(_mRecorderIsInited && _mPlayer!.isStopped);
-    var sink = await createFile();
-    var recordingDataController = StreamController<Food>();
-    _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) {
-      if (buffer is FoodData) {
-        // print("sunk added buffer data");
-        // sink.add(buffer.data!);
-        soundQ.add(buffer);
-        // print("${DateTime.now()}: ${soundQ.length} elements in sound queue");
-        if (soundQ.length > 200) {
-          // print("removing element from sound queue");
-          soundQ.removeFirst();
-        }
-      }
-    });
-    await _mRecorder!.startRecorder(
-      toStream: recordingDataController.sink,
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: tSampleRate,
-    );
-    setState(() {});
-  }
-
-  Future<void> stopRecorder() async {
-    await _mRecorder!.stopRecorder();
-    if (_mRecordingDataSubscription != null) {
-      await _mRecordingDataSubscription!.cancel();
-      _mRecordingDataSubscription = null;
-    }
-    var sink = await createFile();
-    for (var buffer in soundQ) {
-      sink.add(buffer.data!);
-      print("adding thing to file!");
-    }
-    _mplaybackReady = true;
-  }
-
-  _Fn? getRecorderFn() {
-    if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
-      return null;
-    }
-    return _mRecorder!.isStopped
-        ? record
-        : () {
-            stopRecorder().then((value) => setState(() {}));
-          };
-  }
-
-  void play() async {
-    assert(_mPlayerIsInited &&
-        _mplaybackReady &&
-        _mRecorder!.isStopped &&
-        _mPlayer!.isStopped);
-    await _mPlayer!.startPlayer(
-        fromURI: _mPath,
-        sampleRate: tSampleRate,
-        codec: Codec.pcm16,
-        numChannels: 1,
-        whenFinished: () {
-          setState(() {});
-        }); // The readability of Dart is very special :-(
-    setState(() {});
-  }
-
-  Future<void> stopPlayer() async {
-    await _mPlayer!.stopPlayer();
-  }
-
-  _Fn? getPlaybackFn() {
-    if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
-      return null;
-    }
-    return _mPlayer!.isStopped
-        ? play
-        : () {
-            stopPlayer().then((value) => setState(() {}));
-          };
-  }
-
-  // ----------------------------------------------------------------------------------------------------------------------
 
   Widget buildFullApp(BuildContext context) {
     Widget makeBody() {
@@ -236,15 +109,22 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
             ),
             child: Row(children: [
               ElevatedButton(
-                onPressed: getRecorderFn(),
+                onPressed: () {
+                  var recorderFunc = recorder.getRecorderFn();
+                  if (recorderFunc != null) {
+                    recorderFunc();
+                  }
+                  weAreRecording = recorder.mRecorder!.isRecording;
+                  setState(() {});
+                },
                 //color: Colors.white,
                 //disabledColor: Colors.grey,
-                child: Text(_mRecorder!.isRecording ? 'Stop' : 'Record'),
+                child: Text(weAreRecording ? 'Stop' : 'Record'),
               ),
               SizedBox(
                 width: 20,
               ),
-              Text(_mRecorder!.isRecording
+              Text(weAreRecording
                   ? 'Recording in progress'
                   : 'Recorder is stopped'),
             ]),
@@ -264,17 +144,24 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
             ),
             child: Row(children: [
               ElevatedButton(
-                onPressed: getPlaybackFn(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer!.isPlaying ? 'Stop' : 'Play'),
+                onPressed: () {
+                  var playbackFunc = recorder.getPlaybackFn();
+                  if (playbackFunc != null) {
+                    playbackFunc();
+                  }
+                  weArePlaying = recorder.mPlayer!.isPlaying;
+                  setState(() {});
+                },
+                // style: ButtonStyle(backgroundColor: MyColor()),
+                // backgroundColor: weArePlaying ? MaterialStateColor Colors.blue : Colors.grey),
+                // color: Colors.white,
+                // disabledColor: Colors.grey,
+                child: Text(weArePlaying ? 'Stop' : 'Play'),
               ),
               SizedBox(
                 width: 20,
               ),
-              Text(_mPlayer!.isPlaying
-                  ? 'Playback in progress'
-                  : 'Player is stopped'),
+              Text(weArePlaying ? 'Playback in progress' : 'Player is stopped'),
             ]),
           ),
           Container(
