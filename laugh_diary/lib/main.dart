@@ -3,157 +3,171 @@ import 'package:english_words/english_words.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'audio_recorder.dart';
+import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  //TODO: save int to cache
+  int _selectedIndex = 0;
+  static const List<Widget> _pages = <Widget>[
+    AudioRecorder(),
+    AudioFileList(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Laugh Diary',
       home: Scaffold(
         appBar: AppBar(
-          title: const Text("press the button"),
+          title: const Text("Laugh"),
         ),
-        body: Center(
-          child: AudioRecorder(),      // use the RecordButton widget
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,      // use the RecordButton widget
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.yellow,
+        bottomNavigationBar: bottomBar(),
     ),
       color: Colors.red,    // TODO: this doesn't work for some reason
     );
   }
+
+  //https://blog.logrocket.com/how-to-build-a-bottom-navigation-bar-in-flutter/
+  Widget bottomBar() {
+    return BottomNavigationBar(
+      backgroundColor: Colors.cyanAccent,
+      elevation: 8.0,
+      iconSize: 24,
+      items: const<BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: "Home",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list),
+          label: "Playlist",
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      }
+    );
+  }
+
 }
 
-// //
-// class RecordButton extends StatefulWidget {
-//   const RecordButton({Key? key}) : super(key: key);
-//
-//   @override
-//   _RecordButtonState createState() => _RecordButtonState();
-// }
-//
-// // The button will change state depending on _recording
-// class _RecordButtonState extends State<RecordButton> {
-//   bool _recording = false;
-//   @override
-//   Widget build(BuildContext context) {
-//     return TextButton(
-//         onPressed: () {
-//           setState(() {
-//             _recording = _recording ? false : true;
-//           });
-//         },
-//         child: _recording ? const Text("Stop Recording") : const Text("Press to Record")
-//     );
-//   }
-// }
 
-
-class AudioRecorder extends StatefulWidget {
-  const AudioRecorder({Key? key}) : super(key: key);
+class AudioFileList extends StatefulWidget {
+  const AudioFileList({Key? key}) : super(key: key);
 
   @override
-  _AudioRecorderState createState() => _AudioRecorderState();
+  _AudioFileListState createState() => _AudioFileListState();
 }
 
-class _AudioRecorderState extends State<AudioRecorder> {
-  FlutterSoundRecorder? _myRecorder = FlutterSoundRecorder();
-  bool _myRecorderIsInited = false;
-  bool _isRecording = false;
-  String _mPath = "";
-  final _mCodec = Codec.aacADTS;
+class _AudioFileListState extends State<AudioFileList> {
 
+  var audioFiles = ["audioFile1", "audioFile2", "audioFile3",
+    "audioFile4", "audioFile5", "audioFile6",
+    "audioFile7", "audioFile8", "audioFile9",
+    "audioFile10", "audioFile11", "audioFile12"];
 
   @override
   Widget build(BuildContext context) {
-    print("build button!");
-    print(_myRecorderIsInited);
-    return TextButton(
-        onPressed: () {
-          if (_myRecorderIsInited) {
-            !_isRecording ? record().then((value) {
-              setState(() {
-                _isRecording = true;
-              });
-            })
-                : stopRecorder().then((value) {
-              setState(() {
-                _isRecording = false;
-              });
-            });
-          }
-          // setState(() {
-          //   _isRecording == _isRecording ? false : true;
-          // });
-        },
-        child: _isRecording ? const Text("Stop Recording") : const Text("Press to Record")
-    );  }
-
+    return ListView(
+      children: List<AudioFile>.generate(audioFiles.length, (i) => AudioFile(audioFiles[i])),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
 
-
-    // CARE: openAudioSession returns a Future
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
-    openRecorder().then((value) {
-      setState(() {
-        _myRecorderIsInited = true;
-      });
-    });
-
-    print("recorder init");
+    // load a list of audio files
+    loadAudioFiles();
   }
 
-  Future<void> openRecorder() async {
-    final status = await Permission.microphone.request();
-    if (status != PermissionStatus.granted) {
-      throw RecordingPermissionException(
-          'Microphone permission is not granted');
-    }
-
-    // Get temp file
-    var tempDir = await getTemporaryDirectory();
-    _mPath = '${tempDir.path}/TEST_FILE.aac';
-
-    _myRecorder!.openAudioSession().then((value) {
-      setState(() {
-        _myRecorderIsInited = true;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _myRecorder!.closeAudioSession();
-    _myRecorder = null;
-    super.dispose();
-    print("recorder dispose");
-
-  }
-
-  Future<void> record() async {
-    await _myRecorder!.startRecorder(
-      toFile: _mPath,
-      codec: _mCodec,
-    ).then((value) {
-      print("currently recording!!");
-    });
-  }
-
-  Future<void> stopRecorder() async {
-    await _myRecorder!.stopRecorder().then((value) {
-      print("stopped recording!!");
-    });
+  void loadAudioFiles(){
+    // TODO
+    // append to list
+    // get latest x from cache or firebase
   }
 
 }
 
 
+class AudioFile extends StatefulWidget {
+  String filePath;
+
+  AudioFile(this.filePath) {}
+
+  @override
+  State<AudioFile> createState() => _AudioFileState();
+}
+
+class _AudioFileState extends State<AudioFile> {
+  bool isPlaying = false;
+
+  DateTime? date;
+
+  Duration? duration;
+
+  Image? coverPhoto;
+
+  Color textColor = Colors.black;
+
+  @override
+  Widget build(BuildContext context) {
+     return Card(
+        child: ListTile(
+          title: Text(widget.filePath,
+            style: TextStyle(color: textColor),
+          ),
+          onTap: () {
+            setState(() {
+              isPlaying = !isPlaying;
+              if (!isPlaying) {
+                textColor = Colors.black;
+                PlayAudio();
+              }
+              else {
+                textColor = Colors.red;
+              }
+            });
+          },
+        )
+     );
+  }
+
+  void PlayAudio() {
+    // audioManager.PlayAudio
+  }
+}
+
+
+class AudioCacheManager {
+  static Future getAudioFile(String url) {
+    return FirebaseCacheManager().getSingleFile(url);
+  }
+  
+  static Future writeAudioFileToCache() {
+    return FirebaseCacheManager().putFile(url, fileBytes)
+  }
+}
+
 //
-//
+// ---------AUDIOPLAYER ---------------------------
 //
 // class AudioPlayer extends StatefulWidget {
 //   const AudioPlayer({Key? key}) : super(key: key);
