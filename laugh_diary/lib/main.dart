@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'audio_recorder.dart';
 import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
+import 'audio_files.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,13 +16,17 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
-  //TODO: save int to cache
+  //TODO: save int to cache to save state when closing app
+  // Current open page
   int _selectedIndex = 0;
+
+  // List of pages
   static const List<Widget> _pages = <Widget>[
     AudioRecorder(),
     AudioFileList(),
   ];
 
+  // Template build function
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,6 +47,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   //https://blog.logrocket.com/how-to-build-a-bottom-navigation-bar-in-flutter/
+  // Bottom bar and functionality
   Widget bottomBar() {
     return BottomNavigationBar(
       backgroundColor: Colors.cyanAccent,
@@ -69,102 +75,21 @@ class _MyAppState extends State<MyApp> {
 }
 
 
-class AudioFileList extends StatefulWidget {
-  const AudioFileList({Key? key}) : super(key: key);
 
-  @override
-  _AudioFileListState createState() => _AudioFileListState();
-}
-
-class _AudioFileListState extends State<AudioFileList> {
-
-  var audioFiles = ["audioFile1", "audioFile2", "audioFile3",
-    "audioFile4", "audioFile5", "audioFile6",
-    "audioFile7", "audioFile8", "audioFile9",
-    "audioFile10", "audioFile11", "audioFile12"];
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: List<AudioFile>.generate(audioFiles.length, (i) => AudioFile(audioFiles[i])),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // load a list of audio files
-    loadAudioFiles();
-  }
-
-  void loadAudioFiles(){
-    // TODO
-    // append to list
-    // get latest x from cache or firebase
-  }
-
-}
+// class AudioCacheManager {
+//   static Future getAudioFile(String url) {
+//     return FirebaseCacheManager().getSingleFile(url);
+//   }
+// }
 
 
-class AudioFile extends StatefulWidget {
-  String filePath;
-
-  AudioFile(this.filePath) {}
-
-  @override
-  State<AudioFile> createState() => _AudioFileState();
-}
-
-class _AudioFileState extends State<AudioFile> {
-  bool isPlaying = false;
-
-  DateTime? date;
-
-  Duration? duration;
-
-  Image? coverPhoto;
-
-  Color textColor = Colors.black;
-
-  @override
-  Widget build(BuildContext context) {
-     return Card(
-        child: ListTile(
-          title: Text(widget.filePath,
-            style: TextStyle(color: textColor),
-          ),
-          onTap: () {
-            setState(() {
-              isPlaying = !isPlaying;
-              if (!isPlaying) {
-                textColor = Colors.black;
-                PlayAudio();
-              }
-              else {
-                textColor = Colors.red;
-              }
-            });
-          },
-        )
-     );
-  }
-
-  void PlayAudio() {
-    // audioManager.PlayAudio
-  }
-}
 
 
-class AudioCacheManager {
-  static Future getAudioFile(String url) {
-    return FirebaseCacheManager().getSingleFile(url);
-  }
-  
-  static Future writeAudioFileToCache() {
-    return FirebaseCacheManager().putFile(url, fileBytes)
-  }
-}
+
+
+
+
+
 
 //
 // ---------AUDIOPLAYER ---------------------------
