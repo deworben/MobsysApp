@@ -41,6 +41,12 @@ dependencies:
   tflite: ^1.1.2
   mfcc: ^1.1.0
   dio: ^4.0.1
+  workmanager: ^0.4.1
+  geolocator: ^7.7.1
+  google_speech: ^2.0.1
+  flutter_absolute_path: ^1.0.6
+  synchronized: ^3.0.0
+  nanoid: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +72,7 @@ flutter:
   assets:
     - assets/model.tflite
     - assets/labels.txt
+    - assets/serviceAccount.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

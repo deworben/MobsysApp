@@ -9,6 +9,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:mfcc/mfcc.dart';
 import 'package:tflite/tflite.dart';
 import 'package:dio/dio.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_speech/google_speech.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:synchronized/synchronized.dart' as mutex;
+import 'package:nanoid/nanoid.dart';
+
 
 /// 1.  Add permissions to AndroidManifest.xml
 /// 2.  Install all dependencies
@@ -16,46 +22,78 @@ import 'package:dio/dio.dart';
 /// 4.  Set android/build.gradle min SDK 21
 /// 5.  Add --enable-software-rendering flag to run configuration
 /// 6.  Add --no-sound-null-safety flag to run configuration
+/// 7.  Use an AVD that supports google play services (i.e. Pixel 4)
+/// 8.  Go to GCP, create a project, add speech to text API, create a service account, add a key in json,
+///       download the json key file, add it to assets, name it "serviceAccount.json".
+
+
+typedef RealtimeCallBack = void Function(bool, bool, double, double);
+typedef DetectionCallBack = void Function(String, bool, double, double, String);
+
 class LaughDetector {
   FlutterSoundPlayer? player;
   FlutterSoundRecorder? recorder;
   StreamSubscription? audioSub;
-  void Function(bool, double, bool) callback = (y, p, c) => {};
+  SpeechToText? speechToText;
+  RecognitionConfig? speechRecognitionConfig;
   var buffer = List<int>.from([]);
   var prevBuffers = List<List<int>>.from([]);
+  var laughLock = mutex.Lock();
   var prevPredictions = List<int>.from([]);
+  var prevConsistentlyLaughing = false;
   var samplingRate = 44100; // DO NOT CHANGE
   var recorderOpened = false;
   var playerOpened = false;
   var logLevel = Level.debug;
   var logger = Logger();
-  var maxSamples = 44100; // DO NOT CHANGE
-  var fileName = "recording";
+  var maxBufferSize = 44100; // DO NOT CHANGE
   var dio = Dio();
   var training = false;
-  var historySize = 10;
-  var laughRatioThreshold = 0.5;
+  var historySize = 20;
+  var lookBackN = 8;
+  var lookBackThresh = 6;
+  var bufferLock = mutex.Lock();
+  var recorded = false;
 
   LaughDetector();
 
-  Future<void> init(final void Function(bool, double, bool) cb) async {
+  Future<void> init() async {
     var status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Microphone permission not granted');
     }
+
+    status = await Permission.location.request();
+    if (status != PermissionStatus.granted) {
+      throw const LocationServiceDisabledException();
+    }
+
     if (!recorderOpened) {
       recorder = FlutterSoundRecorder(logLevel: logLevel);
       await recorder!.openAudioSession();
       recorderOpened = true;
     }
+
     if (!playerOpened) {
       player = FlutterSoundPlayer(logLevel: logLevel);
       await player!.openAudioSession();
       playerOpened = true;
     }
+
     await Tflite.loadModel(
         model: "assets/model.tflite", labels: "assets/labels.txt");
-    callback = cb;
+
+    var gcpCredential =
+        await rootBundle.loadString('assets/serviceAccount.json');
+    var serviceAccount = ServiceAccount.fromString(gcpCredential);
+    speechToText = SpeechToText.viaServiceAccount(serviceAccount);
+
+    speechRecognitionConfig = RecognitionConfig(
+        encoding: AudioEncoding.LINEAR16,
+        model: RecognitionModel.basic,
+        enableAutomaticPunctuation: true,
+        sampleRateHertz: samplingRate,
+        languageCode: 'en-US');
   }
 
   Future<void> destroy() async {
@@ -71,89 +109,113 @@ class LaughDetector {
     }
   }
 
-  Future<void> startDetection() async {
+  Future<void> processBuffer(
+      List<int> bufferCopy,
+      List<List<int>> prevBuffersCopy,
+      RealtimeCallBack onBuffer,
+      DetectionCallBack onDetect) async {
+    bufferCopy = bufferCopy.take(maxBufferSize).toList();
+    var samples = Uint8List.fromList(bufferCopy)
+        .buffer
+        .asInt16List()
+        .toList()
+        .map((e) => e.toDouble())
+        .toList();
+    var features =
+        MFCC.mfccFeats(samples, samplingRate, 1024, 512, 512, 20, 20);
+    var flattened = features.expand((i) => i).toList();
+    var input = Float32List.fromList(flattened).buffer.asUint8List();
+    var predictions = await Tflite.runModelOnBinary(binary: input);
+
+    var currentlyLaughing = false;
+    if (predictions!.isNotEmpty) {
+      currentlyLaughing = predictions.first['label'] == 'laughing';
+    }
+
+    var detected = false;
+    await laughLock.synchronized(() async {
+      prevPredictions.add(currentlyLaughing ? 1 : 0);
+      if (prevPredictions.length > historySize) {
+        prevPredictions.removeAt(0);
+      }
+      var laughCount =
+          prevPredictions.reversed.take(lookBackN).reduce((a, b) => a + b);
+      var consistentlyLaughing = laughCount >= lookBackThresh;
+      detected = !prevConsistentlyLaughing && consistentlyLaughing;
+      if (prevConsistentlyLaughing && !consistentlyLaughing) {
+        prevPredictions =
+            List.filled(prevPredictions.length, 0, growable: true);
+      }
+      prevConsistentlyLaughing = consistentlyLaughing;
+    });
+
+    var located = false;
+    var latitude = 0.0;
+    var longitude = 0.0;
+    try {
+      var loc = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      located = true;
+      latitude = loc.latitude;
+      longitude = loc.longitude;
+    } on Exception catch (_) {
+      logger.e(
+          "Cannot acquire location, skipping. If you are seeing this, this is expected.");
+    }
+
+    var content = "";
+    if (detected) {
+      var tempDir = await getTemporaryDirectory();
+      var fileId = nanoid();
+      var outFile = File('${tempDir.path}/$fileId.pcm');
+      if (outFile.existsSync()) {
+        await outFile.delete();
+      }
+      IOSink fileSink = outFile.openWrite();
+      var fullRecording = prevBuffersCopy.expand((i) => i).toList();
+      fileSink.add(Uint8List.fromList(fullRecording));
+      fileSink.close();
+      var recognitionResult = await speechToText!
+          .recognize(speechRecognitionConfig!, fullRecording);
+      if (recognitionResult.results.isNotEmpty &&
+          recognitionResult.results.first.alternatives.isNotEmpty) {
+        content = recognitionResult.results.first.alternatives.first.transcript;
+      }
+      onDetect(content, located, latitude, longitude, fileId);
+    }
+
+    onBuffer(currentlyLaughing, located, latitude, longitude);
+  }
+
+  /// Maybe wrap the detection in another async function. with duplicate buffer.
+  /// so it keeps adding the buffer.
+  /// but processing are mostly done on the side.
+  Future<void> startDetection(
+      RealtimeCallBack onBuffer, DetectionCallBack onDetect) async {
     if (!recorderOpened || !recorder!.isStopped) {
       return;
     }
-    // reset buffer
+
     buffer = List.from([]);
     prevBuffers = List.from([]);
     var controller = StreamController<Food>();
     audioSub = controller.stream.listen((segment) async {
       if (segment is FoodData) {
-        buffer.addAll(segment.data!.toList());
-        if (buffer.length > maxSamples) {
-          // buffer swap
-          var lastBuffer = buffer.take(maxSamples).toList();
-          prevBuffers.add(buffer);
-          buffer = List.from([]);
-
-          // limit historic buffer size
-          while (prevBuffers.length > historySize) {
-            prevBuffers.removeAt(0);
-            prevPredictions.removeAt(0);
-          }
-
-          // save to file
-          var tempDir = await getTemporaryDirectory();
-          var outFile = File('${tempDir.path}/$fileName.pcm');
-          if (outFile.existsSync()) {
-            await outFile.delete();
-          }
-          IOSink fileSink = outFile.openWrite();
-          for (var b in prevBuffers) {
-            fileSink.add(Uint8List.fromList(b));
-          }
-          fileSink.close();
-
-          // convert pcm to mfcc
-          var samples =
-              Uint8List.fromList(lastBuffer).buffer.asInt16List().toList();
-          var samplesCvt = samples.map((e) => e.toDouble()).toList();
-          var features =
-              MFCC.mfccFeats(samplesCvt, samplingRate, 1024, 512, 512, 20, 20);
-
-          // upload for training
-          if (training) {
-            var svrResp = await dio.post('http://172.16.0.5:5000/',
-                data: {'mfcc': features}).catchError((e) => {});
-            logger.d(svrResp);
-          }
-
-          // convert mfcc to input tensor
-          var flattened = features.expand((i) => i).toList();
-          var input = Float32List.fromList(flattened).buffer.asUint8List();
-
-          // classification
-          var predictions = await Tflite.runModelOnBinary(binary: input);
-          var laughing = false;
-          var confidence = 0.0;
-
-          if (predictions!.isNotEmpty) {
-            if (predictions[0]['label'] == 'laughing') {
-              laughing = true;
-              confidence = predictions[0]['confidence'];
-            } else {
-              laughing = false;
-              confidence = predictions[0]['confidence'];
+        await bufferLock.synchronized(() async {
+          buffer.addAll(segment.data!.toList());
+          if (buffer.length > maxBufferSize) {
+            prevBuffers.add(buffer);
+            if (prevBuffers.length > historySize) {
+              prevBuffers.removeAt(0);
             }
-            logger.d(laughing);
-            logger.d(confidence);
+            processBuffer(
+                List.from(buffer), List.from(prevBuffers), onBuffer, onDetect);
+            buffer = List.from([]);
           }
-          prevPredictions.add(laughing ? 1 : 0);
-
-          // verify the user is consistently laughing
-          var consistentLaughing = false;
-          var laughCount = prevPredictions.reduce((a, b) => a + b);
-          if (laughCount > laughRatioThreshold * historySize) {
-            consistentLaughing = true;
-          }
-
-          // execute call back to deliver result
-          callback(laughing, confidence, consistentLaughing);
-        }
+        });
       }
     });
+
     await recorder!.startRecorder(
       toStream: controller.sink,
       codec: Codec.pcm16,
@@ -171,13 +233,13 @@ class LaughDetector {
     audioSub = null;
   }
 
-  Future<void> startPlayback() async {
+  Future<void> startPlayback(String fileId) async {
     if (!playerOpened || !player!.isStopped) {
       return;
     }
     var tempDir = await getTemporaryDirectory();
     await player!.startPlayer(
-        fromURI: '${tempDir.path}/$fileName.pcm',
+        fromURI: '${tempDir.path}/$fileId.pcm',
         sampleRate: samplingRate,
         codec: Codec.pcm16,
         numChannels: 1);

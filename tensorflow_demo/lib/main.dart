@@ -32,39 +32,58 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // states that you want to use and update in your view
   var state = 0;
   var logger = Logger();
   var status = "Initial";
   var result = "None";
   var consistentResult = "None";
   var detector = LaughDetector();
+  var lat = 0.0;
+  var lgt = 0.0;
+  var lat2 = 0.0;
+  var lgt2 = 0.0;
+  var fileId = "None";
 
-  callback(bool laughing, double confidence, bool consistentLaughing) async {
-      logger.i(laughing);
-      logger.i(confidence);
-      logger.i(consistentLaughing);
-      if (laughing) {
-        result = "Laughing";
-      } else {
-        result = "Talking";
-      }
-      if (consistentLaughing) {
-        consistentResult = "Consistent";
-      } else {
-        consistentResult = "Not Consistent";
-      }
-      setState(() {});
+  // the function to update the states after detection
+  onBuffer(
+      bool laughing, bool located, double latitude, double longitude) async {
+    if (laughing) {
+      result = "Currently Laughing";
+    } else {
+      result = "Currently Talking";
+    }
+    if (located) {
+      lat = latitude;
+      lgt = longitude;
+    }
+    setState(() {});
   }
 
+  onDetect(String content, bool located, double latitude, double longitude,
+      String fileId) async {
+    if (content != "") {
+      consistentResult = content;
+    }
+    if (located) {
+      lat2 = latitude;
+      lgt2 = longitude;
+    }
+    this.fileId = fileId;
+    setState(() {});
+  }
+
+  // this is a simple finite state machine and does detection in order
+  // showing how to use the library
   loop() async {
     if (state == 0) {
       logger.w("Detector Start");
-      await detector.init(callback);
+      await detector.init();
       state = 1;
       status = "Started";
     } else if (state == 1) {
       logger.w("Recording Start");
-      await detector.startDetection();
+      await detector.startDetection(onBuffer, onDetect);
       state = 2;
       status = "Recording";
     } else if (state == 2) {
@@ -74,7 +93,11 @@ class _MyHomePageState extends State<MyHomePage> {
       status = "Recorded";
     } else if (state == 3) {
       logger.w("Playing Start");
-      await detector.startPlayback();
+      if (fileId != "None") {
+        await detector.startPlayback(fileId);
+      } else {
+        logger.e("Not audio file saved yet.");
+      }
       state = 4;
       status = "Playing";
     } else if (state == 4) {
@@ -113,7 +136,19 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.bodyText1,
             ),
             Text(
+              '($lat, $lgt)',
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            Text(
+              fileId,
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            Text(
               consistentResult,
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            Text(
+              '($lat2, $lgt2)',
               style: Theme.of(context).textTheme.bodyText1,
             ),
           ],
