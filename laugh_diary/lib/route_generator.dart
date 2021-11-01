@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/basic_screen.dart';
 import 'screens/basic_screen_2.dart';
+import 'screens/basic_screen_3.dart';
 import 'screens/recorder_screen.dart';
 
 class RouteGenerator {
@@ -22,6 +23,8 @@ class RouteGenerator {
       //       ),
       // );
       // }
+      case '/third':
+        return MaterialPageRoute(builder: (_) => RecordToStreamExample());
       // If args is not of the correct type, return an error page.
       // You can also throw an exception while in development.
       // return _errorRoute();

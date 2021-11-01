@@ -11,6 +11,9 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseService {
+  // TODO: make singleton at the start
+  // Future<firebase_core.FirebaseApp> initialization = firebase_core.Firebase.initializeApp();
+  FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseService() {}
 
   void uploadFile() async {
@@ -24,7 +27,7 @@ class FirebaseService {
 
     await FirebaseAppCheck.instance
         .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
-    FirebaseAuth auth = FirebaseAuth.instance;
+
     UserCredential userCredential =
         await FirebaseAuth.instance.signInAnonymously();
 

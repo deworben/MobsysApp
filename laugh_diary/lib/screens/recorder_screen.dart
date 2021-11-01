@@ -17,8 +17,6 @@ class RecordToStreamExample extends StatefulWidget {
 }
 
 class _RecordToStreamExampleState extends State<RecordToStreamExample> {
-  final Future<firebase_core.FirebaseApp> _initialization =
-      firebase_core.Firebase.initializeApp();
   Recorder recorder = Recorder();
   FirebaseService firebaseService = FirebaseService();
 
@@ -152,26 +150,27 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      // Initialize FlutterFire:
-      future: _initialization,
-      builder: (context, snapshot) {
-        // Check for errors
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
-          // return SomethingWentWrong();
-        }
+    return buildFullApp(context); // TODO fix this
+    //   return FutureBuilder(
+    //     // Initialize FlutterFire:
+    //     future: firebaseService.initialization,
+    //     builder: (context, snapshot) {
+    //       // Check for errors
+    //       if (snapshot.hasError) {
+    //         return Center(
+    //           child: Text('Error: ${snapshot.error}'),
+    //         );
+    //         // return SomethingWentWrong();
+    //       }
 
-        // Once complete, show your application
-        if (snapshot.connectionState == ConnectionState.done) {
-          return buildFullApp(context);
-        }
+    //       // Once complete, show your application
+    //       if (snapshot.connectionState == ConnectionState.done) {
+    //         return buildFullApp(context);
+    //       }
 
-        // Otherwise, show something whilst waiting for initialization to complete
-        return Text("still loading");
-      },
-    );
+    //       // Otherwise, show something whilst waiting for initialization to complete
+    //       return Text("still loading");
+    //     },
+    //   );
   }
 }
