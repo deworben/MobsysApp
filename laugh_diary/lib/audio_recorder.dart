@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:laugh_diary/static/recording_controller.dart';
 
 class AudioRecorder extends StatefulWidget {
   const AudioRecorder({Key? key}) : super(key: key);
@@ -22,28 +23,40 @@ class _AudioRecorderState extends State<AudioRecorder> {
   Widget build(BuildContext context) {
     print("build button!");
     print(_myRecorderIsInited);
-    return Center(
-      child:TextButton(
-          onPressed: () {
-            if (_myRecorderIsInited) {
-              !_isRecording ? record().then((value) {
-                setState(() {
-                  _isRecording = true;
-                });
-              })
-                  : stopRecorder().then((value) {
-                setState(() {
-                  _isRecording = false;
-                });
-              });
-            }
-            // setState(() {
-            //   _isRecording == _isRecording ? false : true;
-            // });
-          },
-          child: _isRecording ? const Text("Stop Recording") : const Text("Press to Record")
-      )
-    );   }
+
+    return ValueListenableBuilder<bool>(
+        valueListenable: RecordingController.isRecording,
+        builder: (BuildContext context, bool _isRecording, Widget? child) {
+          this._isRecording = _isRecording;
+          return Center(
+              child: TextButton(
+                  onPressed: () {
+                    RecordingController.startStopPressed();
+
+
+
+                    // if (_myRecorderIsInited) {
+                    //   !_isRecording ? record().then((value) {
+                    //     setState(() {
+                    //       _isRecording = true;
+                    //     });
+                    //   })
+                    //       : stopRecorder().then((value) {
+                    //     setState(() {
+                    //       _isRecording = false;
+                    //     });
+                    //   });
+                    // }
+                    // setState(() {
+                    //   _isRecording == _isRecording ? false : true;
+                    // });
+                  },
+                  child: _isRecording ? const Text("Stop Recording") : const Text("Press to Record")
+              )
+          );
+        }
+    );
+   }
 
 
   @override

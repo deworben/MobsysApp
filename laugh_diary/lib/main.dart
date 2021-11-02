@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'audio_recorder.dart';
 import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
 import 'audio_files.dart';
+import 'audio_player.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,17 +33,27 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Laugh Diary',
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Laugh"),
+        body: Stack(
+          children: [
+            // Positioned(
+            //   child: AudioPlayer(),
+            //   bottom: 10,
+            // ),
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages,      // use the RecordButton widget
+            ),
+            AudioPlayer(),
+          ],
+          alignment: AlignmentDirectional.bottomStart,
         ),
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,      // use the RecordButton widget
-        ),
+        // IndexedStack(
+        //   index: _selectedIndex,
+        //   children: _pages,      // use the RecordButton widget
+        // ),
         backgroundColor: Colors.yellow,
         bottomNavigationBar: bottomBar(),
-    ),
-      color: Colors.red,    // TODO: this doesn't work for some reason
+      ),
     );
   }
 
@@ -50,17 +61,19 @@ class _MyAppState extends State<MyApp> {
   // Bottom bar and functionality
   Widget bottomBar() {
     return BottomNavigationBar(
-      backgroundColor: Colors.cyanAccent,
+      backgroundColor: Colors.black,
+        selectedItemColor: Colors.yellow,
+      unselectedItemColor: Colors.white,
       elevation: 8.0,
       iconSize: 24,
       items: const<BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: "Home",
+          label: "Record",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.list),
-          label: "Playlist",
+          label: "Your Library",
         ),
       ],
       currentIndex: _selectedIndex,

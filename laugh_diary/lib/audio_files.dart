@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:laugh_diary/static/playback_controller.dart';
+import 'objects/audio_file.dart';
 
 // Displays a list of audio files
 // TODO: could wrap in a YourLibrary class
@@ -10,16 +13,24 @@ class AudioFileList extends StatefulWidget {
 }
 
 class _AudioFileListState extends State<AudioFileList> {
-
-  var audioFiles = ["audioFile1", "audioFile2", "audioFile3",
-    "audioFile4", "audioFile5", "audioFile6",
-    "audioFile7", "audioFile8", "audioFile9",
-    "audioFile10", "audioFile11", "audioFile12"];
+  List<AudioFile> audioFiles = [];
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: List<AudioFile>.generate(audioFiles.length, (i) => AudioFile(audioFiles[i])),
+    return Column(
+      children: [
+        AppBar(
+          title: const Text("Your Library"),
+        ),
+        Expanded(
+            child: ListView(
+          children: List<AudioFileListElement>.generate(
+              audioFiles.length,
+              (i) => AudioFileListElement(
+                    audioFiles[i],
+                  )),
+        ))
+      ],
     );
   }
 
@@ -32,56 +43,64 @@ class _AudioFileListState extends State<AudioFileList> {
   }
 
   // get the most recent n audio files
-  void loadAudioFiles(){
+  void loadAudioFiles() {
+    // make 20 audioFiles
+    audioFiles = List<AudioFile>.generate(
+        10,
+        (i) => AudioFile(
+              "audioFile$i",
+              DateTime(2017, 9, 7, 17, i * 5),
+              Duration(seconds: i * 3),
+            ));
+
     // TODO
     // append to list
     // get latest x from cache or firebase
   }
-
 }
 
 // Displays a single audio file, also contains audio file info
-class AudioFile extends StatefulWidget {
-  String filePath;
+class AudioFileListElement extends StatefulWidget {
+  AudioFile audioFile;
 
-  AudioFile(this.filePath) {}
+  AudioFileListElement(this.audioFile) {}
 
   @override
-  State<AudioFile> createState() => _AudioFileState();
+  State<AudioFileListElement> createState() => _AudioFileListElementState();
 }
 
-class _AudioFileState extends State<AudioFile> {
-  bool isPlaying = false;
-
-  DateTime? date;
-
-  Duration? duration;
-
-  Image? coverPhoto;
+class _AudioFileListElementState extends State<AudioFileListElement> {
+  bool _isPlaying = false;
 
   Color textColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        child: ListTile(
-          title: Text(widget.filePath,
-            style: TextStyle(color: textColor),
-          ),
-          onTap: () {
-            setState(() {
-              isPlaying = !isPlaying;
-              if (!isPlaying) {
-                textColor = Colors.black;
-                PlayAudio();
-              }
-              else {
-                textColor = Colors.red;
-              }
-            });
-          },
-        )
-    );
+    return ValueListenableBuilder<AudioFile?>(
+        valueListenable: PlaybackController.currAudioFile,
+        builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
+          // the clicked audio file should play
+          _isPlaying = widget.audioFile == _audioFile;
+          return Card(
+              child: ListTile(
+                leading: FlutterLogo(),
+                title: Text(
+                  widget.audioFile.filePath,
+                  style: TextStyle(color: _isPlaying ? Colors.red : Colors.black),
+                ),
+                subtitle: Text(DateFormat.yMMMd().format(widget.audioFile.date) +
+                    "  " +
+                    widget.audioFile.duration.toString().substring(2, 7)),
+                onTap: () {
+                  setState(() {
+                    // isPlaying = !isPlaying;
+                    if (!_isPlaying) {
+                      PlaybackController.playAudioFile(widget.audioFile);
+                    }
+                  });
+                },
+          ));
+        });
   }
 
   // Plays the audio of the file

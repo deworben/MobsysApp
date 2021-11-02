@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+serviceAccount.json
 
 # IntelliJ related
 *.iml
