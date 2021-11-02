@@ -29,7 +29,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  english_words: ^4.0.0
   permission_handler: ^8.1.6
   flutter_cache_manager_firebase: ^2.0.1
   intl: ^0.17.0

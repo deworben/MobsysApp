@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laugh_diary/audio_files.dart';
 import 'objects/audio_file.dart';
-import 'static/playback_controller.dart';
+import 'static/laugh_detection_controller.dart';
 
 
 class AudioPlayer extends StatefulWidget {
@@ -24,11 +24,11 @@ class _AudioPlayerState extends State<AudioPlayer> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AudioFile?>(
-        valueListenable: PlaybackController.currAudioFile,
+        valueListenable: LaughDetectionController.currAudioFile,
         builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
           this._audioFile = _audioFile;
           return ValueListenableBuilder<bool>(
-              valueListenable: PlaybackController.isPlaying,
+              valueListenable: LaughDetectionController.isPlaying,
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
                 return _isMinimised
@@ -53,7 +53,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
           Expanded(
               child: Column(
                 children: [
-                  PlaybackController.currAudioFile.value!=null
+                  LaughDetectionController.currAudioFile.value!=null
                       ? Text("Currently playing:" + _audioFile!.filePath, textAlign: TextAlign.center,)
                       : const Text("Nothing playing", textAlign: TextAlign.center),
                   playPauseButton(60),
@@ -102,7 +102,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
       onPressed: () {
         playPauseButtonPressed();
       },
-      icon: PlaybackController.isPlaying.value
+      icon: LaughDetectionController.isPlaying.value
           ? Icon(Icons.pause_circle_filled, size: size,)
           : Icon(Icons.play_arrow, size: size,),
     );
@@ -110,7 +110,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
   
   void playPauseButtonPressed() {
     setState(() {
-      PlaybackController.playPausePressed();
+      LaughDetectionController.audioPlayPausePressed();
     });
   }
 

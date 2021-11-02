@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:laugh_diary/static/playback_controller.dart';
+import 'package:laugh_diary/static/laugh_detection_controller.dart';
 import 'objects/audio_file.dart';
 
 // Displays a list of audio files
@@ -77,7 +77,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AudioFile?>(
-        valueListenable: PlaybackController.currAudioFile,
+        valueListenable: LaughDetectionController.currAudioFile,
         builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
           // the clicked audio file should play
           _isPlaying = widget.audioFile == _audioFile;
@@ -95,7 +95,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                   setState(() {
                     // isPlaying = !isPlaying;
                     if (!_isPlaying) {
-                      PlaybackController.playAudioFile(widget.audioFile);
+                      LaughDetectionController.playAudioFile(widget.audioFile);
                     }
                   });
                 },

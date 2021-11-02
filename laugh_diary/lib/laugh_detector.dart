@@ -94,6 +94,8 @@ class LaughDetector {
         enableAutomaticPunctuation: true,
         sampleRateHertz: samplingRate,
         languageCode: 'en-US');
+
+    logger.i("Laugh detector has been initialised");
   }
 
   Future<void> destroy() async {
