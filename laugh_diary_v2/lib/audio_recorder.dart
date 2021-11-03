@@ -124,7 +124,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
       );
     }
     else {
-      // return empty widghet
+      // return empty widget
       return SizedBox.shrink();
     }
   }

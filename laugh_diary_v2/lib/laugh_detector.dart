@@ -14,6 +14,7 @@ import 'package:google_speech/google_speech.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:synchronized/synchronized.dart' as mutex;
 import 'package:nanoid/nanoid.dart';
+import 'static/laugh_detection_controller.dart';
 
 
 /// 1.  Add permissions to AndroidManifest.xml
@@ -95,6 +96,14 @@ class LaughDetector {
         enableAutomaticPunctuation: true,
         sampleRateHertz: samplingRate,
         languageCode: 'en-US');
+
+
+    // TODO: FIX THIS
+    // feed audio info into static notifier variable
+    player!.onProgress!.listen((e) {
+      LaughDetectionController.audioDisposition.value = e;
+    });
+
 
     logger.i("Laugh detector has been initialised");
   }
@@ -256,5 +265,27 @@ class LaughDetector {
       return;
     }
     await player!.stopPlayer();
+  }
+
+  Future<void> seek(double d) async {
+    if (!playerOpened || !player!.isPlaying) {
+      return;
+    }
+    await player!.seekToPlayer(Duration(milliseconds: d.floor()));
+  }
+
+
+  Future<void> pausePlayback() async {
+    if (!playerOpened || !player!.isPlaying) {
+      return;
+    }
+    await player!.pausePlayer();
+  }
+
+  Future<void> resumePlayback() async {
+    if (!playerOpened || !player!.isPlaying) {
+      return;
+    }
+    await player!.resumePlayer();
   }
 }

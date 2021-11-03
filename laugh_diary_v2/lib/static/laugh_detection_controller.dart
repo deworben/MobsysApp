@@ -5,6 +5,7 @@ import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'recording_controller.dart';
 import 'package:laugh_diary_v2/laugh_detector.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
 typedef DetectionCallBack = void Function(String, bool, double, double, String);
@@ -26,6 +27,7 @@ class LaughDetectionController {
   // Recorder notifier
   static ValueNotifier<bool> isRecording = ValueNotifier<bool>(false);
   static ValueNotifier<AudioFile?> lastSavedAudioFile = ValueNotifier<AudioFile?>(null);
+  static ValueNotifier<PlaybackDisposition?> audioDisposition = ValueNotifier<PlaybackDisposition?>(null);
 
   // Laugh detection stuff
   static final LaughDetector _laughDetector = LaughDetector();
@@ -43,7 +45,7 @@ class LaughDetectionController {
   //
   static Future<bool> audioPlayPausePressed() async {
     // can't play audio while recording
-    if (isRecording.value) {
+    if (isRecording.value || currAudioFile.value == null) {
       if (isPlaying.value) {
         throw Exception("Should not be able to play audio while recording");
       }
@@ -108,6 +110,10 @@ class LaughDetectionController {
   static void initLaughDetector() async {
     await _laughDetector.init();
     initialised = true;
+  }
+
+  static Future<void> seek(double d) async {
+    await _laughDetector.seek(d);
   }
 
   // For testing
