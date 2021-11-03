@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class AudioFile {
   String filePath;
 
+  String name = "";
+
   DateTime date;
 
   Duration duration;
@@ -14,10 +16,20 @@ class AudioFile {
   String? coverImageUrl = "https://www.pinclipart.com/picdir/big/116-1169283_crying-laughing-emoji-clipart-face-with-tears-of.png";
 
   AudioFile(this.filePath, this.date, this.duration, this.content) {
-
+    name = filePath;
   }
 
-  // void setImage(String imageUrl) {
-  //   coverImage = Image.network(imageUrl);
-  // }
+  void setName(String name) {
+    this.name = name;
+  }
+}
+
+enum SortBy {
+  all,
+  favourites,
+  name,
+  durationAsc,
+  durationDesc,
+  dateNew,
+  dateOld,
 }

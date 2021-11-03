@@ -16,27 +16,55 @@ class AudioFileList extends StatefulWidget {
 }
 
 class _AudioFileListState extends State<AudioFileList> {
-  // List<AudioFile> audioFiles = [];
+  List<AudioFile> _audioFiles = [];
   var logger = Logger();
+
+  SortBy _value = SortBy.all;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<AudioFile>>(
         valueListenable: LaughDetectionController.audioFiles,
         builder: (BuildContext context, List<AudioFile> _audioFiles, Widget? child) {
+          this._audioFiles = _audioFiles;
           logger.e("UPDATING AUDIOFILE LIST");
           return Column(
             children: [
               AppBar(
                 title: const Text("Gallery"),
+
               ),
+
+              Container(
+                child: DropdownButton<SortBy>(
+                  value: _value,
+                  icon: Icon(Icons.arrow_drop_down_sharp),
+                  underline: Container(
+                    height: 2,
+                    color: Colors.black,
+                  ),
+                  onChanged: (SortBy? value) {
+                    setState(() {
+                      _value = value!;
+                    });
+                  },
+                  items: [
+                    DropdownMenuItem(
+                        value: SortBy.all,
+                        child: Text("All")),
+                    DropdownMenuItem(
+                        value: SortBy.favourites,
+                        child: Text("Favourites")),
+                    DropdownMenuItem(
+                        value: SortBy.name,
+                        child: Text("Name")),
+                  ],
+                ),
+              ),
+
               Expanded(
                   child: ListView(
-                    children: List<AudioFileListElement>.generate(
-                        _audioFiles.length,
-                            (i) => AudioFileListElement(
-                              _audioFiles[i],
-                        )),
+                    children: createListElements(_value),
                     shrinkWrap: true,
                   ))
             ],
@@ -68,6 +96,24 @@ class _AudioFileListState extends State<AudioFileList> {
     // get latest x from cache or firebase
   }
 
+  List<AudioFileListElement> createListElements(SortBy sortBy) {
+    switch(sortBy) {
+      case SortBy.favourites: {
+        return
+          _audioFiles.where((a) => a.favourite).map((a) => AudioFileListElement(a)).toList();
+      }
+      case SortBy.name: {
+        _audioFiles.sort((a, b) => a.filePath.compareTo(b.filePath));
+        return _audioFiles.map((a) => AudioFileListElement(a)).toList();
+      }
+      // sort by date by default
+      default: {
+        _audioFiles.sort((a, b) => a.date.compareTo(b.date));
+        return _audioFiles.map((a) => AudioFileListElement(a)).toList();
+      }
+    }
+  }
+
 }
 
 
@@ -86,6 +132,8 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
   // bool _isPlaying = false;
 
   Color textColor = Colors.black;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -127,16 +175,19 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                             isScrollControlled: true,
                             builder: (context) {
                               return StatefulBuilder(
-                                builder: (BuildContext context, StateSetter setState) {
+                                builder: (BuildContext context, StateSetter updateSelf) {
                                 return Wrap(children: [
                                   ListTile(
                                     leading: !widget.audioFile.favourite ? Icon(Icons.favorite_border) : Icon(Icons.favorite),
                                     title: !widget.audioFile.favourite ? Text("Add to Favourites",) : Text("Remove from Favourites",),
                                     tileColor: Colors.green,
                                     onTap: () {
+                                      // update parent widget
                                       setState(() {
                                         widget.audioFile.favourite = !widget.audioFile.favourite;
                                       });
+                                      // update stateful builder in ModelBottomSheet
+                                      updateSelf ((){});
                                     },
                                   ),
                                   ListTile(
