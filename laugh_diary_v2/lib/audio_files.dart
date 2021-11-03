@@ -133,6 +133,8 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
 
   Color textColor = Colors.black;
 
+  TextEditingController _c = TextEditingController();
+
 
 
   @override
@@ -146,7 +148,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
             child: ListTile(
                 leading: FlutterLogo(),
                 title: Text(
-                  widget.audioFile.filePath + " " + widget.audioFile.content,
+                  widget.audioFile.name + " " + widget.audioFile.content,
                   style: TextStyle(color: _isPlaying ? Colors.red : Colors.black),
                 ),
                 subtitle: Text(DateFormat.yMMMd().format(widget.audioFile.date) +
@@ -193,6 +195,13 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                                   ListTile(
                                     leading: Icon(Icons.drive_file_rename_outline),
                                     title: Text("Rename",),
+                                    onTap: () {
+                                      showDialog(context: context, builder:
+                                      (context) {
+                                        return setNameDialog();
+                                      });
+                                      setState(() {});
+                                    },
                                   ),
                                   ListTile(
                                     leading: Icon(Icons.delete),
@@ -211,8 +220,29 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
       });
   }
 
-  // Plays the audio of the file
-  void PlayAudio() {
-    // audioManager.PlayAudio
+  Widget setNameDialog() {
+    String valueText = widget.audioFile.name;
+    return AlertDialog(
+      title: Text("AudioFile Name"),
+      content: TextFormField(
+        onChanged: (value) {valueText = value;},
+        initialValue: widget.audioFile.name,
+        // controller: _c,
+        decoration: InputDecoration(hintText: "Enter name here"),
+      ),
+      actions: [
+        TextButton(
+          child: Text("Cancel"),
+          onPressed: () {setState(() {Navigator.pop(context);});},),
+        TextButton(
+          child: Text("Accept"),
+          onPressed: () {
+            widget.audioFile.name = valueText;
+            setState(() {
+              Navigator.pop(context);
+            });
+          },),
+      ],
+    );
   }
 }

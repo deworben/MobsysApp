@@ -51,7 +51,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                   children: [
                     FlutterLogo(),
                     _audioFile != null
-                        ? Text(_audioFile!.filePath)
+                        ? Text(_audioFile!.name)
                         : const Text("Nothing playing"),
                   ],
                 ),
@@ -96,7 +96,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
             children: [
               LaughDetectionController.currAudioFile.value != null
                   ? Text(
-                      "Currently playing:" + _audioFile!.filePath,
+                      "Currently playing:" + _audioFile!.name,
                       textAlign: TextAlign.center,
                     )
                   : const Text("Nothing playing", textAlign: TextAlign.center),
