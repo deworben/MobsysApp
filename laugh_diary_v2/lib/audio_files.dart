@@ -55,14 +55,14 @@ class _AudioFileListState extends State<AudioFileList> {
   // get the most recent n audio files
   void loadAudioFiles() {
     // make 20 audioFiles
-    // LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
-    //     10,
-    //     (i) => AudioFile(
-    //       "audioFile$i",
-    //       DateTime(2017, 9, 7, 17, i * 5),
-    //       Duration(seconds: i * 3),
-    //       "DUMMY"
-    //         ));
+    LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
+        10,
+        (i) => AudioFile(
+          "audioFile$i",
+          DateTime(2017, 9, 7, 17, i * 5),
+          Duration(seconds: i * 3),
+          "DUMMY"
+            ));
     // TODO
     // append to list
     // get latest x from cache or firebase
@@ -90,12 +90,12 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AudioFile?>(
-        valueListenable: LaughDetectionController.currAudioFile,
-        builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
-          // the clicked audio file should play
-          var _isPlaying = widget.audioFile == _audioFile;
-          return Card(
-              child: ListTile(
+      valueListenable: LaughDetectionController.currAudioFile,
+      builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
+        // the clicked audio file should play
+        var _isPlaying = widget.audioFile == _audioFile;
+        return Card(
+            child: ListTile(
                 leading: FlutterLogo(),
                 title: Text(
                   widget.audioFile.filePath + " " + widget.audioFile.content,
@@ -106,13 +106,58 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                     widget.audioFile.duration.toString().substring(2, 7)),
                 onTap: () {
                   setState(() {
-                    // if (!_isPlaying) {
                     LaughDetectionController.playAudioFile(widget.audioFile);
-                    // }
                   });
-                },
-          ));
-        });
+                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: !widget.audioFile.favourite ? Icon(Icons.favorite_border) : Icon(Icons.favorite),
+                      onPressed: () {
+                        setState(() {
+                          widget.audioFile.favourite = !widget.audioFile.favourite;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () {
+                        showModalBottomSheet(context: context,
+                            isScrollControlled: true,
+                            builder: (context) {
+                              return StatefulBuilder(
+                                builder: (BuildContext context, StateSetter setState) {
+                                return Wrap(children: [
+                                  ListTile(
+                                    leading: !widget.audioFile.favourite ? Icon(Icons.favorite_border) : Icon(Icons.favorite),
+                                    title: !widget.audioFile.favourite ? Text("Add to Favourites",) : Text("Remove from Favourites",),
+                                    tileColor: Colors.green,
+                                    onTap: () {
+                                      setState(() {
+                                        widget.audioFile.favourite = !widget.audioFile.favourite;
+                                      });
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.drive_file_rename_outline),
+                                    title: Text("Rename",),
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.delete),
+                                    title: Text("Delete",),
+                                  ),
+                                ]);
+                              }
+                            );
+                        });
+                        },
+                    ),
+                  ],
+                )
+            )
+        );
+      });
   }
 
   // Plays the audio of the file

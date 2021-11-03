@@ -58,17 +58,22 @@ class _AudioPlayerState extends State<AudioPlayer> {
                 behavior: HitTestBehavior.translucent,
               ),
               height: 40,
-              color: Colors.red,
             ),
           ),
           Container(
             child: playPauseButton(),
             height: 40,
-            color: Colors.green,
           ),
         ],
       ),
-      color: Colors.blue,
+      // color: Colors.blue,
+      decoration:  BoxDecoration(
+        color: Colors.red,
+        border: Border.all(
+          color: Colors.red,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
     );
   }
 
@@ -101,7 +106,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                   children: [
                     coverPhoto(),
                     transcript(),
-                  ], 
+                  ],
                   mainAxisAlignment : MainAxisAlignment.center
               ),
             ],
