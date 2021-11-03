@@ -6,6 +6,7 @@ import 'audio_recorder.dart';
 import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
 import 'audio_files.dart';
 import 'audio_player.dart';
+import 'dashboard.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,8 +24,8 @@ class _MyAppState extends State<MyApp> {
   // List of pages
   static const List<Widget> _pages = <Widget>[
     AudioRecorder(),
-    AudioFileList()
-    ,
+    AudioFileList(),
+    Dashboard(),
   ];
 
   // Template build function
@@ -73,6 +74,10 @@ class _MyAppState extends State<MyApp> {
         BottomNavigationBarItem(
           icon: Icon(Icons.list),
           label: "Your Library",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard),
+          label: "Dashboard",
         ),
       ],
       currentIndex: _selectedIndex,
