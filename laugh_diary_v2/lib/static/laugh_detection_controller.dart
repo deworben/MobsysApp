@@ -57,11 +57,7 @@ class LaughDetectionController {
     return true;
   }
 
-
-
   static Future<bool> playAudioFile(AudioFile audioFile) async {
-    print("BUG???");
-    logger.e("PLAY");
     // can't play audio while recording
     if (isRecording.value) {
       if (isPlaying.value) {
@@ -70,7 +66,6 @@ class LaughDetectionController {
       return false;
     }
 
-    logger.e("PLAY");
     if (isPlaying.value) {
       await _laughDetector.stopPlayback();
     }

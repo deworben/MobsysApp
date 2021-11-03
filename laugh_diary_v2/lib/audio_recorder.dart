@@ -16,6 +16,7 @@ class AudioRecorder extends StatefulWidget {
 
 class _AudioRecorderState extends State<AudioRecorder> {
   bool _isRecording = false;
+  bool _currStatus = false; // either laughing or not laughing
 
   Duration _elapsedTime = const Duration();
   Timer? timer;
@@ -46,6 +47,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children : [
+              currentStatus(),
               elapsedTime(),
               stopStartButton(),
             ],
@@ -83,6 +85,8 @@ class _AudioRecorderState extends State<AudioRecorder> {
     );
   }
 
+
+  // The widget for the elapsed time
   Widget elapsedTime() {
     String getTwoDigits(int n) => n.toString().padLeft(2,'0');
     final hours = getTwoDigits(_elapsedTime.inHours);
@@ -90,11 +94,39 @@ class _AudioRecorderState extends State<AudioRecorder> {
     final seconds = getTwoDigits(_elapsedTime.inSeconds.remainder(60));
     final textStyle = TextStyle(fontSize: 30);
     return Container(
-      child: Text(hours + ":" + minutes + ":" + seconds, style: textStyle,),
+      decoration:  BoxDecoration(
+        color: Colors.red,
+        border: Border.all(
+          color: Colors.black,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      child: Container(
+        margin: EdgeInsets.all(5.0),
+        child: Text(
+          hours + ":" + minutes + ":" + seconds,
+          style: textStyle,
+        ),
+      )
     );
   }
 
+  Widget currentStatus() {
+    if (_isRecording) {
+      return Container(
+        margin: EdgeInsets.all(30.0),
+        child: Text("Current Status: " + (_currStatus ? "Not Laughing" : "Laughing"),
+            style: TextStyle(fontSize: 15)),
+      );
+    }
+    else {
+      // return empty widghet
+      return SizedBox.shrink();
+    }
+  }
 
+
+  // Starts/stops the timer
   void triggerTimer() {
     if (LaughDetectionController.isRecording.value) {
       timer = Timer.periodic(Duration(seconds: 1), (_) {
@@ -124,7 +156,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
       lgt = longitude;
     }
     logger.i(laughing);
-    setState(() {});
+    setState(() {_currStatus = !laughing;});
   }
 
   onDetect(String content, bool located, double latitude, double longitude,
