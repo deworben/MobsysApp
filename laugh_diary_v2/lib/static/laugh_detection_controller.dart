@@ -25,6 +25,7 @@ class LaughDetectionController {
 
   // Recorder notifier
   static ValueNotifier<bool> isRecording = ValueNotifier<bool>(false);
+  static ValueNotifier<AudioFile?> lastSavedAudioFile = ValueNotifier<AudioFile?>(null);
 
   // Laugh detection stuff
   static final LaughDetector _laughDetector = LaughDetector();
@@ -112,8 +113,15 @@ class LaughDetectionController {
   // For testing
   static void saveAudioId(String id, String content) {
     logger.e("Save audio ID $id");
-    audioFiles.value.add(AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 999), content));
+    // create AudioFile Object
+    AudioFile newAudioFile = AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 999), content);
+
+    // add to list
+    audioFiles.value.add(newAudioFile);
     audioFiles.value = List.from(audioFiles.value);
+
+    // save last created audioFile
+    lastSavedAudioFile.value = newAudioFile;
   }
 
 

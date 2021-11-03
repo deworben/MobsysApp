@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:logger/logger.dart';
 import 'static/laugh_detection_controller.dart';
+import 'package:intl/intl.dart';
+
 
 
 
@@ -47,6 +50,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children : [
+              lastSavedAudioFile(),
               currentStatus(),
               elapsedTime(),
               stopStartButton(),
@@ -123,6 +127,35 @@ class _AudioRecorderState extends State<AudioRecorder> {
       // return empty widghet
       return SizedBox.shrink();
     }
+  }
+
+  Widget lastSavedAudioFile() {
+    return ValueListenableBuilder<AudioFile?>(
+      valueListenable: LaughDetectionController.lastSavedAudioFile,
+      builder: (BuildContext context, AudioFile? _lastSavedAudioFile, Widget? child) {
+        if (_lastSavedAudioFile != null) {
+          return Column(
+            children: [
+              Text("Recently Saved: ",
+                  style: TextStyle(fontSize: 15)),
+              ListTile(
+                leading: FlutterLogo(),
+                title: Text(_lastSavedAudioFile.filePath + " " + _lastSavedAudioFile.content,
+                  style: TextStyle(color: LaughDetectionController.isPlaying.value ? Colors.red : Colors.black),
+                ),
+                subtitle: Text(DateFormat.yMMMd().format(_lastSavedAudioFile.date) + "  " +
+                    _lastSavedAudioFile.duration.toString().substring(2, 7)),
+                onTap: () {
+                  setState(() {LaughDetectionController.playAudioFile(_lastSavedAudioFile);});
+              },
+            )
+          ],);
+      }
+        else {
+          // return empty widghet
+          return SizedBox.shrink();
+        }
+    });
   }
 
 
