@@ -57,6 +57,8 @@ class LaughDetectionController {
     return true;
   }
 
+
+
   static Future<bool> playAudioFile(AudioFile audioFile) async {
     print("BUG???");
     logger.e("PLAY");
@@ -103,10 +105,6 @@ class LaughDetectionController {
     else {
       await _laughDetector.stopDetection();
     }
-
-    // if (_laughDetector.recorder!.isStopped) {
-    //   // TODO: safety check
-    // }
 
     return true;
   }
