@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -16,7 +17,7 @@ class FirebaseService {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseService() {}
 
-  void uploadFile() async {
+  void uploadFile(AudioFile file) async {
     print("hello mr console3");
     var tempDir = await getTemporaryDirectory();
     var targetFile = '${tempDir.path}/flutter_sound_example.pcm';
@@ -48,5 +49,17 @@ class FirebaseService {
       print("Exception occurred when uploading! $e");
     }
     print(targetFile);
+  }
+
+  Future<AudioFile> downloadFile(String path) async {
+    return AudioFile("PATH", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000), "Yo");
+  }
+
+  /// sortby is a string: "none", "date", "duration" ...
+  /// filterby is a string: "none", "keyword", "favourite" ...
+  /// keyowords is a string: a user provided keyword
+  /// count is the number of results
+  Future<List<String>> listFiles(String sortBy, String filterBy, String keywords, int count) async {
+    return List.from(["path1", "path2"]);
   }
 }

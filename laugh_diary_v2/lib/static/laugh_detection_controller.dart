@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
+import 'package:laugh_diary_v2/service/firebase_service.dart';
 import 'recording_controller.dart';
 import 'package:laugh_diary_v2/laugh_detector.dart';
 import 'package:logger/logger.dart';
@@ -121,6 +122,9 @@ class LaughDetectionController {
     logger.e("Save audio ID $path");
     // create AudioFile Object
     AudioFile newAudioFile = AudioFile(path, DateTime(2021, 9, 7, 17, 5), Duration(seconds: duration), content);
+
+    var fbService = FirebaseService();
+    fbService.uploadFile(newAudioFile);
 
     // add to list
     audioFiles.value.add(newAudioFile);

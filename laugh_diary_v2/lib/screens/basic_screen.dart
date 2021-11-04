@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:collection';
 import 'package:flutter/material.dart';
-import '../service/firebaseService.dart';
+import '../service/firebase_service.dart';
 import '../controller/main_controller.dart';
 
 import 'basic_screen_2.dart';
