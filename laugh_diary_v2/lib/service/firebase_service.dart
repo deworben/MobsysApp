@@ -27,20 +27,31 @@ class FirebaseService {
     var localFilepath = '${tempDir.path}/${audioFile.id}';
 
     // Upload firebase metadata to firebase
-    FirebaseFirestore.instance
+    var ref = await FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
-        .collection('audio')
-        .add({
+        .collection('audio');
+    ref.doc(audioFile.id).set({
       'id': audioFile.id,
       'name': audioFile.name,
       'content': 'None str',
       'datetime': Timestamp.fromDate(DateTime.now()),
       'filePath': localFilepath
     });
-    print("**************************************************");
-    print("Bro they want me to upload: ${audioFile.filePath}");
-    print("**************************************************");
+    // FirebaseFirestore.instance
+    //     .collection('users')
+    //     .doc('tim')
+    //     .collection('audio')
+    //     .add({
+    //   'id': audioFile.id,
+    //   'name': audioFile.name,
+    //   'content': 'None str',
+    //   'datetime': Timestamp.fromDate(DateTime.now()),
+    //   'filePath': localFilepath
+    // });
+    // print("**************************************************");
+    // print("Bro they want me to upload: ${audioFile.filePath}");
+    // print("**************************************************");
 
     // Upload the file to firebase
     // var allFiles = Directory("${tempDir.path}")
@@ -121,7 +132,7 @@ class FirebaseService {
         .collection('users')
         .doc('tim')
         .collection('audio')
-        .doc('randomFile')
+        .doc(id)
         .get()
         .then((doc) {
       if (doc.exists) {

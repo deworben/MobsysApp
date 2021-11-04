@@ -364,12 +364,26 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                       },
                     ),
                   ),
+                  SizedBox(height: 10),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         ElevatedButton(
                             // color: Theme.of(context).accentColor,
-                            child: Text('Signin'),
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: 100,
+                              child: Text(
+                                'Sign In',
+                                // style: TextStyle(
+                                //   fontFamily: 'Segoe UI',
+                                //   fontSize: 20,
+                                //   fontWeight: FontWeight.bold,
+                                //   color: const Color(0xff000000),
+                                // ),
+                              ),
+                            ),
+                            // Text('Sign In'),
                             onPressed: () async {
                               _loginErrTxt = await siginInLogic(
                                   context, _email, _password);
@@ -377,7 +391,14 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                             }),
                         ElevatedButton(
                             // color: Theme.of(context).accentColor,
-                            child: Text('Signin with google'),
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: 100,
+                              child: Text(
+                                'Google Sign In',
+                              ),
+                            ),
+                            // Text('Sign In'),
                             onPressed: () async {
                               await signInWGoogle();
                               // _loginErrTxt = await signInWGoogle();
@@ -385,6 +406,10 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                               // }
                               setState(() {});
                             }),
+                      ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
                         ElevatedButton(
                             // color: Theme.of(context).accentColor,
                             child: Text('Test'),
