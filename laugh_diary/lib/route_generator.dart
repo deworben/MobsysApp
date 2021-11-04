@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'screens/basic_screen.dart';
-import 'screens/basic_screen_2.dart';
-import 'screens/basic_screen_3.dart';
 import 'screens/recorder_screen.dart';
 
 class RouteGenerator {
+  final String _errorTxt = "Error";
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // Getting arguments passed in while calling Navigator.pushNamed
-    final args = settings.arguments;
+    // final args = settings.arguments;
 
     switch (settings.name) {
       case '/':
@@ -25,9 +24,6 @@ class RouteGenerator {
       // }
       case '/third':
         return MaterialPageRoute(builder: (_) => RecordToStreamExample());
-      // If args is not of the correct type, return an error page.
-      // You can also throw an exception while in development.
-      // return _errorRoute();
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();
@@ -38,7 +34,7 @@ class RouteGenerator {
     return MaterialPageRoute(builder: (_) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Error'),
+          title: Text("errorTxt"),
         ),
         body: Center(
           child: Text('ERROR'),
