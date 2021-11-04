@@ -3,14 +3,14 @@ import 'dart:io';
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_core/firebase_core.dart' as firebase_core;
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../objects/audio_file.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 class FirebaseService {
   // TODO: make singleton at the start
@@ -18,11 +18,10 @@ class FirebaseService {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseService() {}
 
-  void uploadFile(AudioFile audioFile) async {
+  void uploadFile(AudioFile file) async {
     print("hello mr console3");
-    // var tempDir = await getTemporaryDirectory();
-    // var targetFile = '${tempDir.path}/flutter_sound_example.pcm';
-    var targetFile = audioFile.filePath;
+    var tempDir = await getTemporaryDirectory();
+    var targetFile = '${tempDir.path}/flutter_sound_example.pcm';
 
     // var allFiles = Directory("${tempDir.path}")
     //     .listSync(); // list all files in temp dir
@@ -45,8 +44,7 @@ class FirebaseService {
       // await firebase_storage.FirebaseStorage.instance
       //     .ref('randomFile.pcm')
       //     .putFile(file, metadata);
-      //TODO: make the function store data correclty in the database
-      await storage.ref(audioFile.name).putFile(file, metadata);
+      await storage.ref('randomFile.pcm').putFile(file, metadata);
     } on firebase_core.FirebaseException catch (e) {
       // e.g, e.code == 'canceled'
       print("Exception occurred when uploading! $e");
@@ -54,7 +52,8 @@ class FirebaseService {
     print(targetFile);
   }
 
-  void downloadFile(String id) async {
+  /// given a file id, downlaod the audio file and return an AudioFile object.
+  Future<AudioFile> downloadFile(String id) async {
     var tempDir = await getTemporaryDirectory();
     var targetFile = '${tempDir.path}/${id}';
 
@@ -70,11 +69,6 @@ class FirebaseService {
 
     firebase_storage.FirebaseStorage storage =
         firebase_storage.FirebaseStorage.instance;
-
-    // firebase_storage.Reference ref =
-    // await firebase_storage.FirebaseStorage.instance.ref('/randomFile.pcm');
-    // firebase_storage.StorageReference _ref = await storage.getReferenceFromUrl(
-    //     "gs://laughdetectorbackend.appspot.com/randomFile.pcm");
 
     String downloadURL = await firebase_storage.FirebaseStorage.instance
         .ref('/randomFile.pcm')
@@ -95,20 +89,17 @@ class FirebaseService {
 
     print("download complete");
 
-    // try {
-    //   final metadata = firebase_storage.SettableMetadata(
-    //       contentType: 'audio/pcm',
-    //       customMetadata: {'picked-file-path': file.path});
+    return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5),
+        Duration(seconds: 1000), "Yo");
+  }
 
-    //   // await firebase_storage.FirebaseStorage.instance
-    //   //     .ref('randomFile.pcm')
-    //   //     .putFile(file, metadata);
-
-    //   //gs://laughdetectorbackend.appspot.com/randomFile.pcm
-    //   await storage.ref('randomFile.pcm').getData(file);
-    // } on firebase_core.FirebaseException catch (e) {
-    //   // e.g, e.code == 'canceled'
-    //   print("Exception occurred when uploading! $e");
-    // }
+  /// sortby is a string: "none", "date", "duration" ...
+  /// filterby is a string: "none", "keyword", "favourite" ...
+  /// keyowords is a string: a user provided keyword
+  /// count is the number of results
+  /// returns a list of ids.
+  Future<List<String>> listFiles(
+      String sortBy, String filterBy, String keywords, int count) async {
+    return List.from(["path1", "path2"]);
   }
 }

@@ -7,9 +7,6 @@ import 'package:logger/logger.dart';
 import '../static/laugh_detection_controller.dart';
 import 'package:intl/intl.dart';
 
-
-
-
 class AudioRecorder extends StatefulWidget {
   const AudioRecorder({Key? key}) : super(key: key);
 
@@ -36,38 +33,34 @@ class _AudioRecorderState extends State<AudioRecorder> {
   var fileId = "None";
   var logger = Logger();
 
-
   @override
   Widget build(BuildContext context) {
     // print("build button!");
 
     return ValueListenableBuilder<bool>(
-      valueListenable: LaughDetectionController.isRecording,
-      builder: (BuildContext context, bool _isRecording, Widget? child) {
-        this._isRecording = _isRecording;
-        return Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children : [
-              lastSavedAudioFile(),
-              currentStatus(),
-              elapsedTime(),
-              stopStartButton(),
-            ],
+        valueListenable: LaughDetectionController.isRecording,
+        builder: (BuildContext context, bool _isRecording, Widget? child) {
+          this._isRecording = _isRecording;
+          return Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                lastSavedAudioFile(),
+                currentStatus(),
+                elapsedTime(),
+                stopStartButton(),
+              ],
             ),
           );
-        }
-    );
-   }
-
+        });
+  }
 
   @override
   void initState() {
     super.initState();
     LaughDetectionController.initLaughDetector();
   }
-
 
   Widget stopStartButton() {
     return Container(
@@ -78,52 +71,51 @@ class _AudioRecorderState extends State<AudioRecorder> {
       ),
       child: TextButton(
           onPressed: () {
-            LaughDetectionController.recordStartStopPressed(onBuffer, onDetect).then(
-                (_) {triggerTimer();});
+            LaughDetectionController.recordStartStopPressed(onBuffer, onDetect)
+                .then((_) {
+              triggerTimer();
+            });
           },
           child: Icon(
             _isRecording ? Icons.stop : Icons.play_arrow,
             size: 60,
-          )
-      ),
+          )),
     );
   }
 
-
   // The widget for the elapsed time
   Widget elapsedTime() {
-    String getTwoDigits(int n) => n.toString().padLeft(2,'0');
+    String getTwoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = getTwoDigits(_elapsedTime.inHours);
     final minutes = getTwoDigits(_elapsedTime.inMinutes.remainder(60));
     final seconds = getTwoDigits(_elapsedTime.inSeconds.remainder(60));
     final textStyle = TextStyle(fontSize: 30);
     return Container(
-      decoration:  BoxDecoration(
-        color: Colors.red,
-        border: Border.all(
-          color: Colors.black,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          border: Border.all(
+            color: Colors.black,
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-      ),
-      child: Container(
-        margin: EdgeInsets.all(5.0),
-        child: Text(
-          hours + ":" + minutes + ":" + seconds,
-          style: textStyle,
-        ),
-      )
-    );
+        child: Container(
+          margin: EdgeInsets.all(5.0),
+          child: Text(
+            hours + ":" + minutes + ":" + seconds,
+            style: textStyle,
+          ),
+        ));
   }
 
   Widget currentStatus() {
     if (_isRecording) {
       return Container(
         margin: EdgeInsets.all(30.0),
-        child: Text("Current Status: " + (_currStatus ? "Not Laughing" : "Laughing"),
+        child: Text(
+            "Current Status: " + (_currStatus ? "Not Laughing" : "Laughing"),
             style: TextStyle(fontSize: 15)),
       );
-    }
-    else {
+    } else {
       // return empty widget
       return SizedBox.shrink();
     }
@@ -131,33 +123,43 @@ class _AudioRecorderState extends State<AudioRecorder> {
 
   Widget lastSavedAudioFile() {
     return ValueListenableBuilder<AudioFile?>(
-      valueListenable: LaughDetectionController.lastSavedAudioFile,
-      builder: (BuildContext context, AudioFile? _lastSavedAudioFile, Widget? child) {
-        if (_lastSavedAudioFile != null) {
-          return Column(
-            children: [
-              Text("Recently Saved: ",
-                  style: TextStyle(fontSize: 15)),
-              ListTile(
-                leading: FlutterLogo(),
-                title: Text(_lastSavedAudioFile.filePath + " " + _lastSavedAudioFile.content,
-                  style: TextStyle(color: LaughDetectionController.isPlaying.value ? Colors.red : Colors.black),
-                ),
-                subtitle: Text(DateFormat.yMMMd().format(_lastSavedAudioFile.date) + "  " +
-                    _lastSavedAudioFile.duration.toString().substring(2, 7)),
-                onTap: () {
-                  setState(() {LaughDetectionController.playAudioFile(_lastSavedAudioFile);});
-              },
-            )
-          ],);
-      }
-        else {
-          // return empty widghet
-          return SizedBox.shrink();
-        }
-    });
+        valueListenable: LaughDetectionController.lastSavedAudioFile,
+        builder: (BuildContext context, AudioFile? _lastSavedAudioFile,
+            Widget? child) {
+          if (_lastSavedAudioFile != null) {
+            return Column(
+              children: [
+                Text("Recently Saved: ", style: TextStyle(fontSize: 15)),
+                ListTile(
+                  leading: FlutterLogo(),
+                  title: Text(
+                    _lastSavedAudioFile.filePath +
+                        " " +
+                        _lastSavedAudioFile.content,
+                    style: TextStyle(
+                        color: LaughDetectionController.isPlaying.value
+                            ? Colors.red
+                            : Colors.black),
+                  ),
+                  subtitle: Text(DateFormat.yMMMd()
+                          .format(_lastSavedAudioFile.date) +
+                      "  " +
+                      _lastSavedAudioFile.duration.toString().substring(2, 7)),
+                  onTap: () {
+                    setState(() {
+                      LaughDetectionController.playAudioFile(
+                          _lastSavedAudioFile);
+                    });
+                  },
+                )
+              ],
+            );
+          } else {
+            // return empty widghet
+            return SizedBox.shrink();
+          }
+        });
   }
-
 
   // Starts/stops the timer
   void triggerTimer() {
@@ -167,8 +169,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
           _elapsedTime = Duration(seconds: _elapsedTime.inSeconds + 1);
         });
       });
-    }
-    else {
+    } else {
       setState(() {
         timer?.cancel();
         _elapsedTime = Duration();
@@ -176,37 +177,18 @@ class _AudioRecorderState extends State<AudioRecorder> {
     }
   }
 
-
   onBuffer(
       bool laughing, bool located, double latitude, double longitude) async {
-    if (laughing) {
-      result = "Currently Laughing";
-    } else {
-      result = "Currently Talking";
-    }
-    if (located) {
-      lat = latitude;
-      lgt = longitude;
-    }
     logger.i(laughing);
-    setState(() {_currStatus = !laughing;});
+    setState(() {
+      _currStatus = !laughing;
+    });
   }
 
   onDetect(String content, bool located, double latitude, double longitude,
-      String fileId, int duration) async {
-    if (content != "") {
-      consistentResult = content;
-    }
-    if (located) {
-      lat2 = latitude;
-      lgt2 = longitude;
-    }
-    this.fileId = fileId;
+      String fileId, String filePath, int duration) async {
+    LaughDetectionController.saveAudioId(fileId, filePath, content, duration);
 
-    // save the file id
-    LaughDetectionController.saveAudioId(fileId, content, duration);
-
-    setState(() {});
     logger.e(content);
   }
 }

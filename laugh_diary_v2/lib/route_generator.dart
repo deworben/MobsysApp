@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/screens/basic_screen.dart';
-import 'screens/recorder_screen.dart';
+// import 'screens/recorder_screen.dart';
 import 'screens/timsMainScreen.dart';
 
 
@@ -25,8 +25,6 @@ class RouteGenerator {
       //       ),
       // );
       // }
-      case '/third':
-        return MaterialPageRoute(builder: (_) => RecordToStreamExample());
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();

@@ -86,6 +86,7 @@ class _AudioFileListState extends State<AudioFileList> {
     LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
         10,
         (i) => AudioFile(
+          "$i",
           "audioFile$i",
           DateTime(2017, 9, 7, 17, i * 5),
           Duration(seconds: i * 3),
