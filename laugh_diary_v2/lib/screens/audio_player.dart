@@ -15,11 +15,7 @@ class AudioPlayer extends StatefulWidget {
 class _AudioPlayerState extends State<AudioPlayer> {
   AudioFile? _audioFile;
 
-  // AudioFile audioFile = AudioFile("This is a filepath", DateTime(2017, 9, 7, 17, 17), Duration(seconds: 100),);
-
   bool _isMinimised = true;
-
-  double _mSubscriptionDuration = 0;
 
   bool _isPlaying = false;
 
@@ -100,7 +96,13 @@ class _AudioPlayerState extends State<AudioPlayer> {
                       textAlign: TextAlign.center,
                     )
                   : const Text("Nothing playing", textAlign: TextAlign.center),
-              playPauseButton(60),
+              Row(
+                children: [
+                  playPauseButton(60),
+                  nextButton(),
+                ],
+              ),
+
               scrubber(),
               Row(
                   children: [
@@ -181,6 +183,18 @@ class _AudioPlayerState extends State<AudioPlayer> {
               Icons.play_arrow,
               size: size,
             ),
+    );
+  }
+
+  Widget nextButton() {
+    return IconButton(
+        onPressed: () {
+          LaughDetectionController.skipNextAudioFile();
+        },
+        icon: Icon(
+          Icons.skip_next,
+          size: 30,
+        ),
     );
   }
 
