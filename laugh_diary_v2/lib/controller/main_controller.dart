@@ -12,7 +12,7 @@ Future<String> siginInLogic(
 
   try {
     // await auth.signInWithEmailAndPassword(email: email, password: password);
-
+    print("singing in with user = $email and password = $password");
     // setState(() {
     //   login_err_txt = "";
     // });
