@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AudioFile {
-  String id;
-
   String filePath;
 
   String name = "";

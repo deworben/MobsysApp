@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service/firebase_service.dart';
 import '../controller/main_controller.dart';
-import '../service/firebase_service.dart';
 
 class Basic_Screen extends StatefulWidget {
   @override
@@ -9,10 +8,10 @@ class Basic_Screen extends StatefulWidget {
 }
 
 class _Basic_ScreenState extends State<Basic_Screen> {
-  FirebaseService _firebaseService = FirebaseService();
+  final FirebaseService _firebaseService = FirebaseService();
   String _email = "";
   String _password = "";
-  String login_err_txt = "";
+  String _loginErrTxt = "";
   // final FBS = FirebaseService();
   // late final auth;
 
@@ -91,7 +90,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           // color: Theme.of(context).accentColor,
                           child: Text('Signin'),
                           onPressed: () async {
-                            login_err_txt =
+                            _loginErrTxt =
                                 await siginInLogic(context, _email, _password);
                             setState(() {});
                           }),
@@ -100,7 +99,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           child: Text('Signin with google'),
                           onPressed: () async {
                             await signInWGoogle();
-                            // login_err_txt = await signInWGoogle();
+                            // _loginErrTxt = await signInWGoogle();
                             print("finished signinwgoogle");
                             // }
                             setState(() {});
@@ -110,6 +109,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           child: Text('Test'),
                           onPressed: () async {
                             _firebaseService.downloadFile('/randomFile.pcm');
+                            // _firebaseService.downloadFile('/randomFile.pcm');
                             setState(() {});
                           }),
 
@@ -137,7 +137,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
               ],
             ),
           ),
-          Text(login_err_txt),
+          Text(_loginErrTxt),
         ],
       );
     }

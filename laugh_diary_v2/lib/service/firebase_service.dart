@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:collection';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
@@ -21,11 +22,11 @@ class FirebaseService {
   void uploadFile(AudioFile file) async {
     print("hello mr console3");
     var tempDir = await getTemporaryDirectory();
-    var targetFile = '${tempDir.path}/flutter_sound_example.pcm';
+    var localFilepath = '${tempDir.path}/flutter_sound_example.pcm';
 
     // var allFiles = Directory("${tempDir.path}")
     //     .listSync(); // list all files in temp dir
-    File file = File(targetFile);
+    File file = File(localFilepath);
 
     await FirebaseAppCheck.instance
         .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
@@ -49,18 +50,33 @@ class FirebaseService {
       // e.g, e.code == 'canceled'
       print("Exception occurred when uploading! $e");
     }
-    print(targetFile);
+    print(localFilepath);
+  }
+
+  Future<void> downloadFromURL(String downloadURL, String localFilepath) async {
+    HttpClient httpClient = new HttpClient();
+    String filePath = '';
+    String myUrl = '';
+
+    try {
+      myUrl = downloadURL;
+      // myUrl = url + '/' + fileName;
+      var request = await httpClient.getUrl(Uri.parse(myUrl));
+      var response = await request.close();
+      if (response.statusCode == 200) {
+        var bytes = await consolidateHttpClientResponseBytes(response);
+        File file = File(localFilepath);
+        await file.writeAsBytes(bytes);
+      } else {
+        print('Error code: ' + response.statusCode.toString());
+      }
+    } catch (ex) {
+      print('Can not fetch url');
+    }
   }
 
   /// given a file id, downlaod the audio file and return an AudioFile object.
   Future<AudioFile> downloadFile(String id) async {
-    var tempDir = await getTemporaryDirectory();
-    var targetFile = '${tempDir.path}/${id}';
-
-    // var allFiles = Directory("${tempDir.path}")
-    //     .listSync(); // list all files in temp dir
-    File file = File(targetFile);
-
     await FirebaseAppCheck.instance
         .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
 
@@ -70,22 +86,30 @@ class FirebaseService {
     firebase_storage.FirebaseStorage storage =
         firebase_storage.FirebaseStorage.instance;
 
-    String downloadURL = await firebase_storage.FirebaseStorage.instance
-        .ref('/randomFile.pcm')
-        .getDownloadURL();
+    var tempDir = await getTemporaryDirectory();
+    var localFilepath = '${tempDir.path}/${id}';
 
-    print("downloadURL: $downloadURL");
+    // var file = File(localFilepath).delete(); // Delete the file for debugging
 
-    // final http.Response downloadData = await http.get(url);
-    await FlutterDownloader.initialize();
-    final taskId = await FlutterDownloader.enqueue(
-      url: 'your download link',
-      savedDir: 'the path of directory where you want to save downloaded files',
-      showNotification:
-          true, // show download progress in status bar (for Android)
-      openFileFromNotification:
-          true, // click on notification to open downloaded file (for Android)
-    );
+    // First check if the file id exists locally and if it does, don't download it again
+    if (await File(localFilepath).exists()) {
+      print("File already exists locally");
+      return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5),
+          Duration(seconds: 1000), "Yo");
+    }
+
+    // If not, download it
+    try {
+      String downloadURL = await firebase_storage.FirebaseStorage.instance
+          .ref(id)
+          .getDownloadURL();
+
+      print("downloadURL: $downloadURL");
+
+      await downloadFromURL(downloadURL, localFilepath);
+    } catch (e) {
+      print("Exception occurred when downloading! $e");
+    }
 
     print("download complete");
 
