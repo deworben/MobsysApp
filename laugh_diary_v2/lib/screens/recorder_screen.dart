@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:laugh_diary_v2/service/firebaseService.dart';
+import 'package:laugh_diary_v2/service/firebase_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -125,7 +125,8 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
             ),
             child: Row(children: [
               ElevatedButton(
-                onPressed: firebaseService.uploadFile,
+                // onPressed: firebaseService.uploadFile,
+                onPressed: () {},
                 //disabledColor: Colors.grey,
                 child: Text('My button'),
               ),

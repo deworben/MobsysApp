@@ -5,6 +5,8 @@ class AudioFile {
 
   String name = "";
 
+  String id = "";
+
   DateTime date;
 
   Duration duration;
@@ -13,7 +15,8 @@ class AudioFile {
 
   bool favourite = false;
 
-  String? coverImageUrl = "https://www.pinclipart.com/picdir/big/116-1169283_crying-laughing-emoji-clipart-face-with-tears-of.png";
+  String? coverImageUrl =
+      "https://www.pinclipart.com/picdir/big/116-1169283_crying-laughing-emoji-clipart-face-with-tears-of.png";
 
   AudioFile(this.filePath, this.date, this.duration, this.content) {
     name = filePath;

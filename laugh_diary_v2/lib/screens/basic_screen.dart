@@ -1,19 +1,6 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:collection';
 import 'package:flutter/material.dart';
-import '../service/firebaseService.dart';
 import '../controller/main_controller.dart';
-
-import 'basic_screen_2.dart';
-
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:firebase_core/firebase_core.dart' as firebase_core;
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../service/firebase_service.dart';
 
 class Basic_Screen extends StatefulWidget {
   @override
@@ -21,6 +8,7 @@ class Basic_Screen extends StatefulWidget {
 }
 
 class _Basic_ScreenState extends State<Basic_Screen> {
+  FirebaseService _firebaseService = FirebaseService();
   String _email = "";
   String _password = "";
   String login_err_txt = "";
@@ -114,6 +102,13 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                             // login_err_txt = await signInWGoogle();
                             print("finished signinwgoogle");
                             // }
+                            setState(() {});
+                          }),
+                      ElevatedButton(
+                          // color: Theme.of(context).accentColor,
+                          child: Text('Test'),
+                          onPressed: () async {
+                            _firebaseService.downloadFile('/randomFile.pcm');
                             setState(() {});
                           }),
 
