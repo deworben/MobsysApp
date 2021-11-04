@@ -108,7 +108,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           // color: Theme.of(context).accentColor,
                           child: Text('Test'),
                           onPressed: () async {
-                            _firebaseService.downloadFile('/randomFile.pcm');
+                            _firebaseService.downloadFile('randomFile');
                             // _firebaseService.downloadFile('/randomFile.pcm');
                             setState(() {});
                           }),

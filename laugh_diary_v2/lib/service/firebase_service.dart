@@ -112,8 +112,8 @@ class FirebaseService {
     // First check if the file id exists locally and if it does, don't download it again
     if (await File(localFilepath).exists()) {
       print("File already exists locally");
-      return AudioFile(id, localFilepath, DateTime(2021, 9, 7, 17, 5),
-          Duration(seconds: 1000), "Content");
+      return AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
+          "Content", localFilepath);
     }
 
     // If not, download it
@@ -131,8 +131,8 @@ class FirebaseService {
 
     print("download complete");
 
-    return AudioFile(id, localFilepath, DateTime(2021, 9, 7, 17, 5),
-        Duration(seconds: 1000), "Content");
+    return AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
+        "Content", localFilepath);
   }
 
   /// sortby is a string: "none", "date", "duration" ...
