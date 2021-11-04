@@ -61,12 +61,13 @@ class _AudioFileListState extends State<AudioFileList> {
                   ],
                 ),
               ),
-
+              // TODO: THIS IS UPDATED!!!
               Expanded(
-                  child: ListView(
+                child: SingleChildScrollView(
+                  child: Column(
                     children: createListElements(_value),
-                    shrinkWrap: true,
-                  ))
+                )),
+              )
             ],
           );
         });
