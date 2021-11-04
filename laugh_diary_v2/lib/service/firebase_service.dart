@@ -51,14 +51,16 @@ class FirebaseService {
     print(targetFile);
   }
 
-  Future<AudioFile> downloadFile(String path) async {
-    return AudioFile("PATH", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000), "Yo");
+  /// given a file id, downlaod the audio file and return an AudioFile object.
+  Future<AudioFile> downloadFile(String id) async {
+    return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000), "Yo");
   }
 
   /// sortby is a string: "none", "date", "duration" ...
   /// filterby is a string: "none", "keyword", "favourite" ...
   /// keyowords is a string: a user provided keyword
   /// count is the number of results
+  /// returns a list of ids.
   Future<List<String>> listFiles(String sortBy, String filterBy, String keywords, int count) async {
     return List.from(["path1", "path2"]);
   }

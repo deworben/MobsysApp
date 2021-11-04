@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AudioFile {
+  String id;
+
   String filePath;
 
   String name = "";
@@ -15,7 +17,7 @@ class AudioFile {
 
   String? coverImageUrl = "https://www.pinclipart.com/picdir/big/116-1169283_crying-laughing-emoji-clipart-face-with-tears-of.png";
 
-  AudioFile(this.filePath, this.date, this.duration, this.content) {
+  AudioFile(this.id, this.filePath, this.date, this.duration, this.content) {
     name = filePath;
   }
 

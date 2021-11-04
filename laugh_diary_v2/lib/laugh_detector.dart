@@ -27,7 +27,7 @@ import 'static/laugh_detection_controller.dart';
 ///       download the json key file, add it to assets, name it "serviceAccount.json".
 
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
-typedef DetectionCallBack = void Function(String, bool, double, double, String, int);
+typedef DetectionCallBack = void Function(String, bool, double, double, String, String, int);
 typedef PlaybackCompleteCallBack = void Function();
 
 class LaughDetector {
@@ -197,7 +197,7 @@ class LaughDetector {
 
       var duration = (sampleCount / samplingRate).round();
 
-      onDetect(content, located, latitude, longitude, filePath, duration);
+      onDetect(content, located, latitude, longitude, fileId, filePath, duration);
     }
 
     onBuffer(currentlyLaughing, located, latitude, longitude);
