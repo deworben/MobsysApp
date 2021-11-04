@@ -77,6 +77,7 @@ class FirebaseService {
   }
 
   /// given a file id, downlaod the audio file and return an AudioFile object.
+  /// guarantee the path property is set.
   Future<AudioFile> downloadFile(String id) async {
     await FirebaseAppCheck.instance
         .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
