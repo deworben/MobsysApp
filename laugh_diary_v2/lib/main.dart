@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'route_generator.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
-import 'screens/audio_recorder.dart';
-import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
-import 'screens/audio_files.dart';
-import 'screens/audio_player.dart';
-import 'screens/dashboard.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FlutterDownloader.initialize(debug: true);
   runApp(MyApp());
 }
 
