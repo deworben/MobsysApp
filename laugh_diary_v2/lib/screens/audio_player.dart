@@ -29,13 +29,13 @@ class _AudioPlayerState extends State<AudioPlayer> {
               valueListenable: LaughDetectionController.isPlaying,
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
-                return bottomBarView();
+                return bottomBarView(context);
                 // return _isMinimised ? bottomBarView() : fullScreenView();
               });
         });
   }
 
-  Widget bottomBarView() {
+  Widget bottomBarView(context) {
     return Container(
       // shape: CircularNotchedRectangle(),
       child: Row(
@@ -229,9 +229,10 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
   }
 
-  void playPauseButtonPressed() {
+  Future<void> playPauseButtonPressed() async {
+    await LaughDetectionController.audioPlayPausePressed();
     setState(() {
-      LaughDetectionController.audioPlayPausePressed();
+
     });
   }
 }

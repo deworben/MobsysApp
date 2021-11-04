@@ -84,17 +84,14 @@ class _AudioFileListState extends State<AudioFileList> {
 
     // load a list of audio files
     loadAudioFiles();
-    logger.e("Finished init function");
   }
 
   // get the most recent n audio files
   Future loadAudioFiles() async {
 
-    logger.e("Start loading list files");
     LaughDetectionController.audioFiles.value = await fbService.listFiles();
     LaughDetectionController.sortAudioList(_currSortBy);
-    logger.e("Finished loading list files");
-    setState(() { });
+    // setState(() { });
 
     // make 20 audioFiles
     // LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
@@ -150,7 +147,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                 ),
                 subtitle: Text(DateFormat.yMMMd().format(widget.audioFile.date) +
                     "  " +
-                    widget.audioFile.duration.toString().substring(2, 7)),
+                    widget.audioFile.duration.toString()),
                 onTap: () {
                   setState(() {
                     LaughDetectionController.playAudioFile(widget.audioFile);
