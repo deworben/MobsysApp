@@ -103,7 +103,7 @@ class LaughDetectionController {
         break;
       }
       case SortBy.name: {
-        audioFiles.value.sort((a, b) => a.filePath.compareTo(b.filePath));
+        audioFiles.value.sort((a, b) => a.name.compareTo(b.name));
         sortedAudioFiles.value = List.from(audioFiles.value);
         break;
       }
