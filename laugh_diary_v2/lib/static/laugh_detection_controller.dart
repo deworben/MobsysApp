@@ -2,36 +2,35 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
+import 'package:laugh_diary_v2/service/firebase_service.dart';
 import 'recording_controller.dart';
 import 'package:laugh_diary_v2/laugh_detector.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
-typedef DetectionCallBack = void Function(String, bool, double, double, String, int);
+typedef DetectionCallBack = void Function(
+    String, bool, double, double, String, String, int);
 typedef PlaybackCompleteCallBack = void Function();
 
 // Notifies listeners when values change
 class LaughDetectionController {
-
   static var logger = Logger();
 
   // Audio player notifiers
-  static ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
-  static ValueNotifier<AudioFile?> currAudioFile =
-      ValueNotifier<AudioFile?>(null);
-  static ValueNotifier<List<AudioFile>> audioFiles = ValueNotifier<List<AudioFile>>([]);
-  static ValueNotifier<List<AudioFile>> sortedAudioFiles = ValueNotifier<List<AudioFile>>([]);
-
-
+  static var isPlaying = ValueNotifier<bool>(false);
+  static var currAudioFile = ValueNotifier<AudioFile?>(null);
+  static var audioFiles = ValueNotifier<List<AudioFile>>([]);
+  static var fbService = FirebaseService();
+  static var sortedAudioFiles = ValueNotifier<List<AudioFile>>([]);
 
   // Recorder notifier
-  static ValueNotifier<bool> isRecording = ValueNotifier<bool>(false);
-  static ValueNotifier<AudioFile?> lastSavedAudioFile = ValueNotifier<AudioFile?>(null);
-  static ValueNotifier<PlaybackDisposition?> audioDisposition = ValueNotifier<PlaybackDisposition?>(null);
+  static var isRecording = ValueNotifier<bool>(false);
+  static var lastSavedAudioFile = ValueNotifier<AudioFile?>(null);
+  static var audioDisposition = ValueNotifier<PlaybackDisposition?>(null);
 
   // Laugh detection stuff
-  static final LaughDetector _laughDetector = LaughDetector();
+  static final _laughDetector = LaughDetector();
   static bool initialised = false;
 
   // current filter for filteredFiles
@@ -57,7 +56,12 @@ class LaughDetectionController {
     }
     isPlaying.value = !isPlaying.value;
     if (isPlaying.value) {
-      await _laughDetector.startPlayback(currAudioFile.value!.filePath, onComplete);
+      if (currAudioFile.value!.filePath == null) {
+        currAudioFile.value!.filePath =
+            (await fbService.downloadFile(currAudioFile.value!.id)).filePath;
+      }
+      await _laughDetector.startPlayback(
+          currAudioFile.value!.filePath!, onComplete);
     } else {
       await _laughDetector.stopPlayback();
     }
@@ -77,13 +81,15 @@ class LaughDetectionController {
       await _laughDetector.stopPlayback();
     }
 
+    audioFile = await fbService.downloadFile(audioFile.id);
+
     // check if need to update current audio file
     if (currAudioFile.value != audioFile) {
       currAudioFile.value = audioFile;
     }
 
     isPlaying.value = true;
-    await _laughDetector.startPlayback(audioFile.filePath, onComplete);
+    await _laughDetector.startPlayback(audioFile.filePath!, onComplete);
 
     return true;
   }
@@ -159,8 +165,7 @@ class LaughDetectionController {
 
     if (isRecording.value) {
       await _laughDetector.startDetection(onBuffer, onDetect);
-    }
-    else {
+    } else {
       await _laughDetector.stopDetection();
     }
 
@@ -177,10 +182,14 @@ class LaughDetectionController {
   }
 
   // For testing
-  static void saveAudioId(String path, String content, int duration) {
+  static void saveAudioId(
+      String id, String path, String content, int duration) {
     logger.e("Save audio ID $path");
     // create AudioFile Object
-    AudioFile newAudioFile = AudioFile(path, DateTime(2021, 9, 7, 17, 5), Duration(seconds: duration), content);
+    AudioFile newAudioFile = AudioFile(id, DateTime(2021, 9, 7, 17, 5),
+        Duration(seconds: duration), content, path);
+
+    fbService.uploadFile(newAudioFile);
 
     // add to list
     audioFiles.value.add(newAudioFile);
@@ -192,6 +201,4 @@ class LaughDetectionController {
     // save last created audioFile
     lastSavedAudioFile.value = newAudioFile;
   }
-
-
 }

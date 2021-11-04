@@ -27,7 +27,8 @@ import 'static/laugh_detection_controller.dart';
 ///       download the json key file, add it to assets, name it "serviceAccount.json".
 
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
-typedef DetectionCallBack = void Function(String, bool, double, double, String, int);
+typedef DetectionCallBack = void Function(
+    String, bool, double, double, String, String, int);
 typedef PlaybackCompleteCallBack = void Function();
 
 class LaughDetector {
@@ -197,7 +198,8 @@ class LaughDetector {
 
       var duration = (sampleCount / samplingRate).round();
 
-      onDetect(content, located, latitude, longitude, filePath, duration);
+      onDetect(
+          content, located, latitude, longitude, fileId, filePath, duration);
     }
 
     onBuffer(currentlyLaughing, located, latitude, longitude);
@@ -250,7 +252,7 @@ class LaughDetector {
   }
 
   Future<void> startPlayback(
-      String fileId, PlaybackCompleteCallBack onComplete) async {
+      String filePath, PlaybackCompleteCallBack onComplete) async {
     if (!playerOpened || !player!.isStopped) {
       return;
     }
@@ -259,7 +261,7 @@ class LaughDetector {
       LaughDetectionController.audioDisposition.value = e;
     });
     await player!.startPlayer(
-        fromURI: '${tempDir.path}/$fileId.pcm',
+        fromURI: filePath,
         sampleRate: samplingRate,
         codec: Codec.pcm16,
         numChannels: 1);

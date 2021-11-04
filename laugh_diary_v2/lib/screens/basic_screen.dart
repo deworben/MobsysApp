@@ -1,19 +1,6 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:collection';
 import 'package:flutter/material.dart';
-import '../service/firebaseService.dart';
+import '../service/firebase_service.dart';
 import '../controller/main_controller.dart';
-
-import 'basic_screen_2.dart';
-
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:firebase_core/firebase_core.dart' as firebase_core;
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class Basic_Screen extends StatefulWidget {
   @override
@@ -21,9 +8,10 @@ class Basic_Screen extends StatefulWidget {
 }
 
 class _Basic_ScreenState extends State<Basic_Screen> {
+  final FirebaseService _firebaseService = FirebaseService();
   String _email = "";
   String _password = "";
-  String login_err_txt = "";
+  String _loginErrTxt = "";
   // final FBS = FirebaseService();
   // late final auth;
 
@@ -102,7 +90,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           // color: Theme.of(context).accentColor,
                           child: Text('Signin'),
                           onPressed: () async {
-                            login_err_txt =
+                            _loginErrTxt =
                                 await siginInLogic(context, _email, _password);
                             setState(() {});
                           }),
@@ -111,9 +99,17 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           child: Text('Signin with google'),
                           onPressed: () async {
                             await signInWGoogle();
-                            // login_err_txt = await signInWGoogle();
+                            // _loginErrTxt = await signInWGoogle();
                             print("finished signinwgoogle");
                             // }
+                            setState(() {});
+                          }),
+                      ElevatedButton(
+                          // color: Theme.of(context).accentColor,
+                          child: Text('Test'),
+                          onPressed: () async {
+                            _firebaseService.downloadFile('randomFile');
+                            // _firebaseService.downloadFile('/randomFile.pcm');
                             setState(() {});
                           }),
 
@@ -141,7 +137,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
               ],
             ),
           ),
-          Text(login_err_txt),
+          Text(_loginErrTxt),
         ],
       );
     }
