@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:logger/logger.dart';
-import 'static/laugh_detection_controller.dart';
+import '../static/laugh_detection_controller.dart';
 import 'package:intl/intl.dart';
 
 
@@ -193,7 +193,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
   }
 
   onDetect(String content, bool located, double latitude, double longitude,
-      String fileId) async {
+      String fileId, int duration) async {
     if (content != "") {
       consistentResult = content;
     }
@@ -204,7 +204,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
     this.fileId = fileId;
 
     // save the file id
-    LaughDetectionController.saveAudioId(fileId, content);
+    LaughDetectionController.saveAudioId(fileId, content, duration);
 
     setState(() {});
     logger.e(content);

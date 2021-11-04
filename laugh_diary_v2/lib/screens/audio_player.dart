@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:laugh_diary_v2/audio_files.dart';
-import 'objects/audio_file.dart';
-import 'static/laugh_detection_controller.dart';
+import 'package:laugh_diary_v2/screens/audio_files.dart';
+import '../objects/audio_file.dart';
+import '../static/laugh_detection_controller.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
 

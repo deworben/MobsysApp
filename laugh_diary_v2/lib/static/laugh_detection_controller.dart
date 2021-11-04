@@ -8,7 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
-typedef DetectionCallBack = void Function(String, bool, double, double, String);
+typedef DetectionCallBack = void Function(String, bool, double, double, String, int);
 typedef PlaybackCompleteCallBack = void Function();
 
 // Notifies listeners when values change
@@ -117,10 +117,10 @@ class LaughDetectionController {
   }
 
   // For testing
-  static void saveAudioId(String id, String content) {
-    logger.e("Save audio ID $id");
+  static void saveAudioId(String path, String content, int duration) {
+    logger.e("Save audio ID $path");
     // create AudioFile Object
-    AudioFile newAudioFile = AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 999), content);
+    AudioFile newAudioFile = AudioFile(path, DateTime(2021, 9, 7, 17, 5), Duration(seconds: duration), content);
 
     // add to list
     audioFiles.value.add(newAudioFile);

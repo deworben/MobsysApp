@@ -16,7 +16,6 @@ import 'package:synchronized/synchronized.dart' as mutex;
 import 'package:nanoid/nanoid.dart';
 import 'static/laugh_detection_controller.dart';
 
-
 /// 1.  Add permissions to AndroidManifest.xml
 /// 2.  Install all dependencies
 /// 3.  Set android/build.gradle target and compile SDK to 31
@@ -27,9 +26,8 @@ import 'static/laugh_detection_controller.dart';
 /// 8.  Go to GCP, create a project, add speech to text API, create a service account, add a key in json,
 ///       download the json key file, add it to assets, name it "serviceAccount.json".
 
-
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
-typedef DetectionCallBack = void Function(String, bool, double, double, String);
+typedef DetectionCallBack = void Function(String, bool, double, double, String, int);
 typedef PlaybackCompleteCallBack = void Function();
 
 class LaughDetector {
@@ -38,6 +36,7 @@ class LaughDetector {
   StreamSubscription? audioSub;
   SpeechToText? speechToText;
   RecognitionConfig? speechRecognitionConfig;
+  StreamSubscription? progressSub;
   var buffer = List<int>.from([]);
   var prevBuffers = List<List<int>>.from([]);
   var laughLock = mutex.Lock();
@@ -83,7 +82,7 @@ class LaughDetector {
     }
 
     await Tflite.loadModel(
-        model: "assets/timmodel.tflite", labels: "assets/labels.txt");
+        model: "assets/zacmodel.tflite", labels: "assets/labels.txt");
 
     var gcpCredential =
         await rootBundle.loadString('assets/serviceAccount.json');
@@ -97,13 +96,9 @@ class LaughDetector {
         sampleRateHertz: samplingRate,
         languageCode: 'en-US');
 
-
     // TODO: FIX THIS
     // feed audio info into static notifier variable
-    player!.onProgress!.listen((e) {
-      LaughDetectionController.audioDisposition.value = e;
-    });
-
+    player!.setSubscriptionDuration(const Duration(milliseconds: 50));
 
     logger.i("Laugh detector has been initialised");
   }
@@ -179,15 +174,18 @@ class LaughDetector {
     }
 
     var content = "";
+    var sampleCount = 0;
     if (detected) {
       var tempDir = await getTemporaryDirectory();
       var fileId = nanoid();
-      var outFile = File('${tempDir.path}/$fileId.pcm');
+      var filePath = '${tempDir.path}/$fileId.pcm';
+      var outFile = File(filePath);
       if (outFile.existsSync()) {
         await outFile.delete();
       }
       IOSink fileSink = outFile.openWrite();
       var fullRecording = prevBuffersCopy.expand((i) => i).toList();
+      sampleCount = fullRecording.length;
       fileSink.add(Uint8List.fromList(fullRecording));
       fileSink.close();
       var recognitionResult = await speechToText!
@@ -196,7 +194,10 @@ class LaughDetector {
           recognitionResult.results.first.alternatives.isNotEmpty) {
         content = recognitionResult.results.first.alternatives.first.transcript;
       }
-      onDetect(content, located, latitude, longitude, fileId);
+
+      var duration = (sampleCount / samplingRate).round();
+
+      onDetect(content, located, latitude, longitude, filePath, duration);
     }
 
     onBuffer(currentlyLaughing, located, latitude, longitude);
@@ -248,11 +249,15 @@ class LaughDetector {
     audioSub = null;
   }
 
-  Future<void> startPlayback(String fileId, PlaybackCompleteCallBack onComplete) async {
+  Future<void> startPlayback(
+      String fileId, PlaybackCompleteCallBack onComplete) async {
     if (!playerOpened || !player!.isStopped) {
       return;
     }
     var tempDir = await getTemporaryDirectory();
+    progressSub = player!.onProgress!.listen((e) {
+      LaughDetectionController.audioDisposition.value = e;
+    });
     await player!.startPlayer(
         fromURI: '${tempDir.path}/$fileId.pcm',
         sampleRate: samplingRate,
@@ -265,6 +270,7 @@ class LaughDetector {
       return;
     }
     await player!.stopPlayer();
+    await progressSub!.cancel();
   }
 
   Future<void> seek(double d) async {
@@ -273,7 +279,6 @@ class LaughDetector {
     }
     await player!.seekToPlayer(Duration(milliseconds: d.floor()));
   }
-
 
   Future<void> pausePlayback() async {
     if (!playerOpened || !player!.isPlaying) {
