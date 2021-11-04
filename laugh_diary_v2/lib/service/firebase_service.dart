@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:collection';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -87,23 +88,37 @@ class FirebaseService {
         firebase_storage.FirebaseStorage.instance;
 
     var tempDir = await getTemporaryDirectory();
-    var localFilepath = '${tempDir.path}/${id}';
+    var localFilepath = '${tempDir.path}/${id}.pcm';
 
     // var file = File(localFilepath).delete(); // Delete the file for debugging
 
     // Download document data from firebase
+    // FirebaseFirestore.instance.collection('users').snapshots()
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc('tim')
+        .collection('audio')
+        .doc('randomFile')
+        .get()
+        .then((doc) {
+      if (doc.exists) {
+        print('Document data: ${doc.data}');
+      } else {
+        print('No such document! = ${id}');
+      }
+    });
 
     // First check if the file id exists locally and if it does, don't download it again
     if (await File(localFilepath).exists()) {
       print("File already exists locally");
-      return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5),
-          Duration(seconds: 1000), "Yo");
+      return AudioFile(id, localFilepath, DateTime(2021, 9, 7, 17, 5),
+          Duration(seconds: 1000), "Content");
     }
 
     // If not, download it
     try {
       String downloadURL = await firebase_storage.FirebaseStorage.instance
-          .ref(id)
+          .ref('/${id}.pcm')
           .getDownloadURL();
 
       print("downloadURL: $downloadURL");
@@ -115,8 +130,8 @@ class FirebaseService {
 
     print("download complete");
 
-    return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5),
-        Duration(seconds: 1000), "Yo");
+    return AudioFile(id, localFilepath, DateTime(2021, 9, 7, 17, 5),
+        Duration(seconds: 1000), "Content");
   }
 
   /// sortby is a string: "none", "date", "duration" ...
