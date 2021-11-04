@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '/screens/basic_screen.dart';
 // import 'screens/recorder_screen.dart';
-import 'screens/timsMainScreen.dart';
-
+import 'screens/tims_main_screen.dart';
 
 class RouteGenerator {
   final String _errorTxt = "Error";
@@ -13,7 +12,7 @@ class RouteGenerator {
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => Basic_Screen());
-        // return MaterialPageRoute(builder: (_) => Basic_Screen());
+      // return MaterialPageRoute(builder: (_) => Basic_Screen());
       case '/second':
         // Validation of correct data type
         // return MaterialPageRoute(builder: (_) => Basic_Screen2());
