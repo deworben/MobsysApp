@@ -60,10 +60,15 @@ class LaughDetectionController {
         currAudioFile.value!.filePath =
             (await fbService.downloadFile(currAudioFile.value!.id)).filePath;
       }
+      // resume instead of start if able
+      if (await _laughDetector.resumePlayback()) {
+        return true;
+      }
       await _laughDetector.startPlayback(
           currAudioFile.value!.filePath!, onComplete);
     } else {
-      await _laughDetector.stopPlayback();
+      await _laughDetector.pausePlayback();
+      // await _laughDetector.stopPlayback();
     }
     return true;
   }
