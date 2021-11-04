@@ -52,16 +52,14 @@ class FirebaseService {
   }
 
   /// given a file id, downlaod the audio file and return an AudioFile object.
+  /// guarantee the path property is set.
   Future<AudioFile> downloadFile(String id) async {
-    return AudioFile("id", "PATH", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000), "Yo");
+    return AudioFile("id", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000), "Yo", "PATH");
   }
 
-  /// sortby is a string: "none", "date", "duration" ...
-  /// filterby is a string: "none", "keyword", "favourite" ...
-  /// keyowords is a string: a user provided keyword
-  /// count is the number of results
-  /// returns a list of ids.
-  Future<List<String>> listFiles(String sortBy, String filterBy, String keywords, int count) async {
-    return List.from(["path1", "path2"]);
+
+  /// returns a list of audio files with file path value as null.
+  Future<List<AudioFile>> listFiles(int count) async {
+    return List.from([]);
   }
 }

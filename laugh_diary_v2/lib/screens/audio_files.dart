@@ -87,10 +87,10 @@ class _AudioFileListState extends State<AudioFileList> {
         10,
         (i) => AudioFile(
           "$i",
-          "audioFile$i",
           DateTime(2017, 9, 7, 17, i * 5),
           Duration(seconds: i * 3),
-          "DUMMY"
+          "DUMMY",
+          "audioFile$i"
             ));
     // TODO
     // append to list
@@ -104,7 +104,7 @@ class _AudioFileListState extends State<AudioFileList> {
           _audioFiles.where((a) => a.favourite).map((a) => AudioFileListElement(a)).toList();
       }
       case SortBy.name: {
-        _audioFiles.sort((a, b) => a.filePath.compareTo(b.filePath));
+        _audioFiles.sort((a, b) => a.id.compareTo(b.id));
         return _audioFiles.map((a) => AudioFileListElement(a)).toList();
       }
       // sort by date by default

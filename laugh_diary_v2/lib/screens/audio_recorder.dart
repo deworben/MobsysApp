@@ -133,7 +133,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
                 ListTile(
                   leading: FlutterLogo(),
                   title: Text(
-                    _lastSavedAudioFile.filePath +
+                    _lastSavedAudioFile.filePath! +
                         " " +
                         _lastSavedAudioFile.content,
                     style: TextStyle(
