@@ -91,6 +91,8 @@ class FirebaseService {
 
     // var file = File(localFilepath).delete(); // Delete the file for debugging
 
+    // Download document data from firebase
+
     // First check if the file id exists locally and if it does, don't download it again
     if (await File(localFilepath).exists()) {
       print("File already exists locally");
