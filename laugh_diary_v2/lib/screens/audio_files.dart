@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laugh_diary_v2/service/firebase_service.dart';
 import 'package:laugh_diary_v2/static/laugh_detection_controller.dart';
 import '../objects/audio_file.dart';
 import 'package:logger/logger.dart';
@@ -18,8 +21,9 @@ class AudioFileList extends StatefulWidget {
 class _AudioFileListState extends State<AudioFileList> {
   List<AudioFile> _filteredFiles = [];
   var logger = Logger();
+  FirebaseService fbService = FirebaseService();
 
-  SortBy _value = SortBy.all;
+  SortBy _currSortBy = SortBy.all;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +41,7 @@ class _AudioFileListState extends State<AudioFileList> {
 
               Container(
                 child: DropdownButton<SortBy>(
-                  value: _value,
+                  value: _currSortBy,
                   icon: Icon(Icons.arrow_drop_down_sharp),
                   underline: Container(
                     height: 2,
@@ -45,9 +49,9 @@ class _AudioFileListState extends State<AudioFileList> {
                   ),
                   onChanged: (SortBy? value) {
                     setState(() {
-                      _value = value!;
+                      _currSortBy = value!;
                       // filter the audio file list
-                      LaughDetectionController.sortAudioList(_value);
+                      LaughDetectionController.sortAudioList(_currSortBy);
                     });
                   },
                   items: [
@@ -80,21 +84,29 @@ class _AudioFileListState extends State<AudioFileList> {
 
     // load a list of audio files
     loadAudioFiles();
+    logger.e("Finished init function");
   }
 
   // get the most recent n audio files
-  void loadAudioFiles() {
+  Future loadAudioFiles() async {
+
+    logger.e("Start loading list files");
+    LaughDetectionController.audioFiles.value = await fbService.listFiles();
+    LaughDetectionController.sortAudioList(_currSortBy);
+    logger.e("Finished loading list files");
+    setState(() { });
+
     // make 20 audioFiles
-    LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
-        10,
-        (i) => AudioFile(
-          "$i",
-          DateTime(2017, 9, 7, 17, i * 5),
-          Duration(seconds: i * 3),
-          "DUMMY",
-          "audioFile$i"
-            ));
-    LaughDetectionController.sortAudioList(SortBy.all);
+    // LaughDetectionController.audioFiles.value = List<AudioFile>.generate(
+    //     10,
+    //     (i) => AudioFile(
+    //       "$i",
+    //       DateTime(2017, 9, 7, 17, i * 5),
+    //       Duration(seconds: i * 3),
+    //       "DUMMY",
+    //       "audioFile$i"
+    //         ));
+    // LaughDetectionController.sortAudioList(SortBy.all);
     // TODO
     // append to list
     // get latest x from cache or firebase

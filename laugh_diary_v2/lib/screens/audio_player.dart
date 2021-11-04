@@ -217,6 +217,18 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
   }
 
+  Widget prevButton() {
+    return IconButton(
+      onPressed: () {
+        LaughDetectionController.skipPrevAudioFile();
+      },
+      icon: Icon(
+        Icons.skip_previous,
+        size: 30,
+      ),
+    );
+  }
+
   void playPauseButtonPressed() {
     setState(() {
       LaughDetectionController.audioPlayPausePressed();
