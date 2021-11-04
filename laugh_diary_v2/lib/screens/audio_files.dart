@@ -102,22 +102,6 @@ class _AudioFileListState extends State<AudioFileList> {
 
   List<AudioFileListElement> createListElements() {
     return _filteredFiles.map((f) => AudioFileListElement(f)).toList();
-
-    // switch(sortBy) {
-    //   case SortBy.favourites: {
-    //     return
-    //       _filteredFiles.where((a) => a.favourite).map((a) => AudioFileListElement(a)).toList();
-    //   }
-    //   case SortBy.name: {
-    //     _filteredFiles.sort((a, b) => a.filePath.compareTo(b.filePath));
-    //     return _filteredFiles.map((a) => AudioFileListElement(a)).toList();
-    //   }
-    //   // sort by date by default
-    //   default: {
-    //     _filteredFiles.sort((a, b) => a.date.compareTo(b.date));
-    //     return _filteredFiles.map((a) => AudioFileListElement(a)).toList();
-    //   }
-    // }
   }
 
 }
@@ -176,6 +160,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                       onPressed: () {
                         showModalBottomSheet(context: context,
                             isScrollControlled: true,
+                            useRootNavigator: true,
                             builder: (context) {
                               return StatefulBuilder(
                                 builder: (BuildContext context, StateSetter updateSelf) {
@@ -246,8 +231,5 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
           },),
       ],
     );
-
-
-
   }
 }

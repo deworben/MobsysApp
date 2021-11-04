@@ -15,7 +15,7 @@ class AudioPlayer extends StatefulWidget {
 class _AudioPlayerState extends State<AudioPlayer> {
   AudioFile? _audioFile;
 
-  bool _isMinimised = true;
+  // bool _isMinimised = true;
 
   bool _isPlaying = false;
 
@@ -29,7 +29,8 @@ class _AudioPlayerState extends State<AudioPlayer> {
               valueListenable: LaughDetectionController.isPlaying,
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
-                return _isMinimised ? bottomBarView() : fullScreenView();
+                return bottomBarView();
+                // return _isMinimised ? bottomBarView() : fullScreenView();
               });
         });
   }
@@ -42,7 +43,24 @@ class _AudioPlayerState extends State<AudioPlayer> {
           Expanded(
             child: Container(
               child: GestureDetector(
-                onTap: () {setState(() {_isMinimised = false;});},
+                onTap: () {setState(() {
+
+                  // _isMinimised = false;
+
+                  // Navigator.push(context,
+                  //     MaterialPageRoute(
+                  //         builder:
+                  //     ));
+
+                  showModalBottomSheet(context: context,
+                      isScrollControlled: true,
+                      useRootNavigator: true,
+                      builder: (context) {
+                    return fullScreenView(context);
+                  });
+
+
+                });},
                 child: Row(
                   children: [
                     FlutterLogo(),
@@ -74,7 +92,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
   }
 
   // TODO: cover bottom app bar?
-  Widget fullScreenView() {
+  Widget fullScreenView(context) {
     return Container(
       child: Column(
         children: [
@@ -82,7 +100,8 @@ class _AudioPlayerState extends State<AudioPlayer> {
               leading: IconButton(
             onPressed: () {
               setState(() {
-                _isMinimised = true;
+                Navigator.pop(context);
+                // _isMinimised = true;
               });
             },
             icon: const Icon(Icons.keyboard_arrow_down_rounded),
