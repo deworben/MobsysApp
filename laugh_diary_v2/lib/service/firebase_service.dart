@@ -20,14 +20,33 @@ class FirebaseService {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseService() {}
 
-  void uploadFile(AudioFile file) async {
-    print("hello mr console3");
-    var tempDir = await getTemporaryDirectory();
-    var localFilepath = '${tempDir.path}/flutter_sound_example.pcm';
+  void uploadFile(AudioFile audioFile) async {
+    print("uploadFile start");
 
+    var tempDir = await getTemporaryDirectory();
+    var localFilepath = '${tempDir.path}/${audioFile.id}';
+
+    // Upload firebase metadata to firebase
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc('tim')
+        .collection('audio')
+        .add({
+      'id': audioFile.id,
+      'name': audioFile.name,
+      'content': 'None str',
+      'datetime': Timestamp.fromDate(DateTime.now()),
+      'filePath': localFilepath
+    });
+    print("**************************************************");
+    print("Bro they want me to upload: ${audioFile.filePath}");
+    print("**************************************************");
+
+    // Upload the file to firebase
     // var allFiles = Directory("${tempDir.path}")
     //     .listSync(); // list all files in temp dir
-    File file = File(localFilepath);
+    // File file = File(localFilepath);
+    File file = File(audioFile.filePath!);
 
     await FirebaseAppCheck.instance
         .activate(webRecaptchaSiteKey: 'recaptcha-v3-site-key');
@@ -46,12 +65,13 @@ class FirebaseService {
       // await firebase_storage.FirebaseStorage.instance
       //     .ref('randomFile.pcm')
       //     .putFile(file, metadata);
-      await storage.ref('randomFile.pcm').putFile(file, metadata);
+      await storage.ref(audioFile.id).putFile(file, metadata);
     } on firebase_core.FirebaseException catch (e) {
       // e.g, e.code == 'canceled'
       print("Exception occurred when uploading! $e");
+    } catch (e) {
+      print("Exception occurred when uploading! $e");
     }
-    print(localFilepath);
   }
 
   Future<void> downloadFromURL(String downloadURL, String localFilepath) async {
@@ -91,6 +111,8 @@ class FirebaseService {
     var tempDir = await getTemporaryDirectory();
     var localFilepath = '${tempDir.path}/${id}.pcm';
 
+    DateTime dt;
+
     // var file = File(localFilepath).delete(); // Delete the file for debugging
 
     // Download document data from firebase
@@ -104,6 +126,13 @@ class FirebaseService {
         .then((doc) {
       if (doc.exists) {
         print('Document data: ${doc.data}');
+        //TODO: Check the document data is valid
+
+        //TODO: use the document constructor to create a new AudioFile object
+        var dateTimeString = doc.data()!['datetime'];
+        dt = DateTime.parse(dateTimeString);
+        print(dt); // 2020-01-02 03:04:05.000
+
       } else {
         print('No such document! = ${id}');
       }
@@ -140,8 +169,18 @@ class FirebaseService {
   /// keyowords is a string: a user provided keyword
   /// count is the number of results
   /// returns a list of ids.
-  Future<List<String>> listFiles(
-      String sortBy, String filterBy, String keywords, int count) async {
+  Future<List<AudioFile>> listFiles() async {
     return List.from(["path1", "path2"]);
+
+// FirebaseFirestore.instance
+//         .collection('users')
+//         .doc('tim')
+//         .collection('audio')
+//         .doc('randomFile')
+//         .get()
+//         .then((doc) {
+//       if (doc.exists) {
+//         print('Document data: ${doc.data}');
+//         //TODO: Check the
   }
 }
