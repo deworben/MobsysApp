@@ -155,6 +155,40 @@ class LaughDetectionController {
     return true;
   }
 
+  static Future<bool> skipPrevAudioFile() async {
+    // can't play audio while recording
+    if (isRecording.value) {
+      if (isPlaying.value) {
+        throw Exception("Should not be able to play audio while recording");
+      }
+      return false;
+    }
+    if (isPlaying.value) {
+      await _laughDetector.stopPlayback();
+    }
+
+    // check if there are audio files in list
+    if (sortedAudioFiles.value.isEmpty) {
+      currAudioFile.value = null;
+      return false;
+    }
+
+    for (var i=0; i < sortedAudioFiles.value.length; i++) {
+      // if found audio file in list
+      if (currAudioFile.value == sortedAudioFiles.value[i]) {
+        // if audio file isn't first item
+        if (i > 0) {
+          // play prev file in list
+          await playAudioFile(sortedAudioFiles.value[i-1]);
+          return true;
+        }
+      }
+    }
+    // just play the last item
+    await playAudioFile(sortedAudioFiles.value[-1]);
+    return true;
+  }
+
   static Future<bool> recordStartStopPressed(
       RealtimeCallBack onBuffer, DetectionCallBack onDetect) async {
     // can't record if playing audio or uninitialised
