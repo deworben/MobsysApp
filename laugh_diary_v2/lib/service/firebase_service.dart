@@ -170,17 +170,38 @@ class FirebaseService {
   /// count is the number of results
   /// returns a list of ids.
   Future<List<AudioFile>> listFiles() async {
-    return List.from(["path1", "path2"]);
+    List audioFileList = [];
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc('tim')
+        .collection('audio')
+        .get()
+        .then((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        print('snapshot.docs.isNotEmpty');
+        snapshot.docs.forEach((doc) {
+          print('doc.data: ${doc.data()}');
+          audioFileList.add(AudioFile(
+              doc.data()['id'],
+              DateTime.parse(doc.data()['datetime'].toDate().toString()),
+              doc.data()['duration'],
+              doc.data()['content'],
+              doc.data().containsKey('filePath')
+                  ? doc.data()['filePath']
+                  : null));
+        });
+      } else {
+        print('snapshot.docs.isEmpty');
+      }
+    });
 
-// FirebaseFirestore.instance
-//         .collection('users')
-//         .doc('tim')
-//         .collection('audio')
-//         .doc('randomFile')
-//         .get()
-//         .then((doc) {
-//       if (doc.exists) {
-//         print('Document data: ${doc.data}');
-//         //TODO: Check the
+    print("Final output = ${List.from(audioFileList)}");
+    return List.from(audioFileList);
+    // return List.from([
+    //   AudioFile("ID", DateTime(2021, 9, 7, 18, 5), Duration(seconds: 1000),
+    //       "Content", "localFilepath"),
+    //   AudioFile("id", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
+    //       "Content", "localFilepath")
+    // ]);
   }
 }
