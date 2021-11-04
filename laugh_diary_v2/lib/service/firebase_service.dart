@@ -164,14 +164,9 @@ class FirebaseService {
         "Content", localFilepath);
   }
 
-  /// sortby is a string: "none", "date", "duration" ...
-  /// filterby is a string: "none", "keyword", "favourite" ...
-  /// keyowords is a string: a user provided keyword
-  /// count is the number of results
-  /// returns a list of ids.
   Future<List<AudioFile>> listFiles() async {
     List audioFileList = [];
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
         .collection('audio')
@@ -197,11 +192,5 @@ class FirebaseService {
 
     print("Final output = ${List.from(audioFileList)}");
     return List.from(audioFileList);
-    // return List.from([
-    //   AudioFile("ID", DateTime(2021, 9, 7, 18, 5), Duration(seconds: 1000),
-    //       "Content", "localFilepath"),
-    //   AudioFile("id", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
-    //       "Content", "localFilepath")
-    // ]);
   }
 }
