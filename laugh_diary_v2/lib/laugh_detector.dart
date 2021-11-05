@@ -276,21 +276,21 @@ class LaughDetector {
   }
 
   Future<void> seek(double d) async {
-    if (!playerOpened || !player!.isPlaying) {
+    if (!playerOpened || player!.isStopped) {
       return;
     }
     await player!.seekToPlayer(Duration(milliseconds: d.floor()));
   }
 
   Future<void> pausePlayback() async {
-    if (!playerOpened || !player!.isPlaying) {
+    if (!playerOpened || player!.isStopped) {
       return;
     }
     await player!.pausePlayer();
   }
 
   Future<bool> resumePlayback() async {
-    if (!playerOpened || !player!.isPlaying) {
+    if (!playerOpened || player!.isStopped) {
       return false;
     }
     await player!.resumePlayer();

@@ -114,6 +114,7 @@ class _AudioFileListState extends State<AudioFileList> {
 // Displays a single audio file, also contains audio file info
 class AudioFileListElement extends StatefulWidget {
   AudioFile audioFile;
+  var logger = Logger();
 
   AudioFileListElement(this.audioFile) {}
 
@@ -131,7 +132,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
         valueListenable: LaughDetectionController.currAudioFile,
         builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
           // the clicked audio file should play
-          var _isPlaying = widget.audioFile == _audioFile;
+          var _isPlaying = (_audioFile != null) ? widget.audioFile.id == _audioFile.id : false;
           return Card(
               margin:
                   const EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 5),
