@@ -7,6 +7,7 @@ import '../controller/main_controller.dart';
 import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
 import '../widgets/inputTextWidget.dart';
+import '../service/firebase_service.dart';
 
 class Basic_Screen extends StatefulWidget {
   // Basic_Screen() : super();
@@ -154,6 +155,8 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                             onPressed: () async {
                               // var a = await _firebaseService.listFiles();
                               // print(a);
+                              FirebaseService fbs = FirebaseService();
+                              fbs.getNumLaughsPerHourOverLastDay();
                               setState(() {});
                             }),
                       ]),
