@@ -95,6 +95,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(primary: Color(0xFF6C48AA)), //Color(0xFF6C48AA)4285f4
                             child: Container(
                               alignment: Alignment.center,
                               width: 100,
@@ -109,7 +110,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                               setState(() {});
                             }),
                         ElevatedButton(
-                            // color: Theme.of(context).accentColor,
+                            style: ElevatedButton.styleFrom(primary: Color(0xFF4285f4)),
                             child: Container(
                               alignment: Alignment.center,
                               width: 100,
@@ -126,34 +127,6 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                               setState(() {});
                             }),
                       ]),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                            // color: Theme.of(context).accentColor,
-                            child: Container(
-                                alignment: Alignment.center,
-                                width: 100,
-                                child: Row(
-                                  children: [
-                                    Text('Test'),
-                                    SizedBox(height: 50),
-                                    SizedBox(width: 5),
-                                    SizedBox.square(
-                                      child: photoGetter(
-                                          "bro that was so chicken"),
-                                      dimension: 40.0,
-                                    ),
-                                  ],
-                                )),
-                            onPressed: () async {
-                              // var a = await _firebaseService.listFiles();
-                              // print(a);
-                              FirebaseService fbs = FirebaseService();
-                              fbs.getNumLaughsPerHourOverLastDay();
-                              setState(() {});
-                            }),
-                      ]),
                 ],
               ),
             ),
@@ -166,6 +139,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Color(0xFF543884),
         title: const Text('Laugh at laughing'),
       ),
       body: makeBody(),

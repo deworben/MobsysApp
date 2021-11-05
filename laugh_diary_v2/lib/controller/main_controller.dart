@@ -25,9 +25,7 @@ Future<String> siginInLogic(
     // setState(() {
     //   login_err_txt = "There was an error logging in";
     // });
-    print("oh noes");
-    print(error);
-    return "ERROR logging in: " + error.toString();
+    return "ERROR: Logging in.";
   }
 }
 
