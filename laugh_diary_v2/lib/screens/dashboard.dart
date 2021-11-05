@@ -25,7 +25,7 @@ class _DashboardState extends State<Dashboard> {
   }
   //
   // void loadCoder() async {
-  //   cities = await rootBundle.loadString('assets/cities15000.txt');
+  //   cities = await rootBundle.loadString('assets/images/cities15000.txt');
   //   coder = GeocodeData(
   //       cities!, //input string
   //       'name',

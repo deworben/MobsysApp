@@ -26,7 +26,7 @@ class FirebaseService {
         .collection('audio');
     ref.doc(audioFile.id).set({
       'id': audioFile.id,
-      'name': audioFile.name,
+      'duration': audioFile.duration.toString(),
       'content': audioFile.content,
       'datetime': Timestamp.fromDate(DateTime.now()),
     });
@@ -139,7 +139,7 @@ class FirebaseService {
       // If not, download it
       try {
         String downloadURL = await firebase_storage.FirebaseStorage.instance
-            .ref('/${id}.pcm')
+            .ref('/${id}')
             .getDownloadURL();
 
         print("downloadURL: $downloadURL");

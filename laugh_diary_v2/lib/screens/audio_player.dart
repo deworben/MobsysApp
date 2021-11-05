@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laugh_diary_v2/screens/audio_files.dart';
 import '../objects/audio_file.dart';
 import '../static/laugh_detection_controller.dart';
+import '../service/photo_getter.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
 class AudioPlayer extends StatefulWidget {
@@ -53,7 +54,6 @@ class _AudioPlayerState extends State<AudioPlayer> {
                         //     MaterialPageRoute(
                         //         builder:
                         //     ));
-
 
                         showModalBottomSheet(
                             context: context,
@@ -121,79 +121,124 @@ class _AudioPlayerState extends State<AudioPlayer> {
   // TODO: cover bottom app bar?
   Widget fullScreenView(context) {
     return ValueListenableBuilder<AudioFile?>(
-      valueListenable: LaughDetectionController.currAudioFile,
-      builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
-        this._audioFile = _audioFile;
-        return ValueListenableBuilder<bool>(
-          valueListenable: LaughDetectionController.isPlaying,
-          builder: (BuildContext context, bool _isPlaying, Widget? child) {
-            this._isPlaying = _isPlaying;
+        valueListenable: LaughDetectionController.currAudioFile,
+        builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
+          this._audioFile = _audioFile;
+          return ValueListenableBuilder<bool>(
+              valueListenable: LaughDetectionController.isPlaying,
+              builder: (BuildContext context, bool _isPlaying, Widget? child) {
+                this._isPlaying = _isPlaying;
 
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter updateSelf) {
-                return Container(
-                  child: Column(
-                    children: [
-                      AppBar(
-                          leading: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            Navigator.pop(context);
-                            // _isMinimised = true;
-                          });
-                        },
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                      )),
-                      Expanded(
-                          child: Column(
-                        children: [
-                          LaughDetectionController.currAudioFile.value != null
-                              ? Text(
-                                  "Currently playing:" + _audioFile!.name,
-                                  textAlign: TextAlign.center,
-                                )
-                              : const Text("Nothing playing", textAlign: TextAlign.center),
-                          Row(
-                            children: [
-                              // play/pause icon button
-                              IconButton(
-                                onPressed: () {
-                                  playPauseButtonPressed();
-                                  updateSelf(() {});
-                                  setState(() {});
-                                },
-                                icon: LaughDetectionController.isPlaying.value
-                                    ? Icon(
-                                  Icons.pause_circle_filled,
-                                  size: 60,
-                                )
-                                    : Icon(
-                                  Icons.play_arrow,
-                                  size: 60,
+                return StatefulBuilder(
+                    builder: (BuildContext context, StateSetter updateSelf) {
+                  return Container(
+                    child: Column(
+                      children: [
+                        AppBar(
+                            leading: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              Navigator.pop(context);
+                              // _isMinimised = true;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                        )),
+                        Container(
+                            alignment: Alignment.topCenter,
+                            padding: EdgeInsets.only(top: 10.0),
+                            child: Expanded(
+                                child: Column(
+                              children: [
+                                SizedBox(height: 100),
+                                topIconRow(),
+                                descriptorTextRow(),
+                                Row(
+                                  children: [
+                                    // play/pause icon button
+                                    IconButton(
+                                      onPressed: () {
+                                        playPauseButtonPressed();
+                                        updateSelf(() {});
+                                        setState(() {});
+                                      },
+                                      icon: LaughDetectionController
+                                              .isPlaying.value
+                                          ? Icon(
+                                              Icons.pause_circle_filled,
+                                              size: 60,
+                                            )
+                                          : Icon(
+                                              Icons.play_arrow,
+                                              size: 60,
+                                            ),
+                                    ),
+                                    // play next icon button
+                                    nextButton(),
+                                  ],
                                 ),
-                              ),
-                              // play next icon button
-                              nextButton(),
-                            ],
-                          ),
-                          scrubber(),
-                          Row(children: [
-                            coverPhoto(),
-                            transcript(),
-                          ], mainAxisAlignment: MainAxisAlignment.center),
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.center,
-                      )),
-                    ],
-                  ),
-                  // TODO: change colour to nice gradient
-                  color: Colors.blue,
-                );
+                                scrubber(),
+                                Row(children: [
+                                  coverPhoto(),
+                                  transcript(),
+                                ], mainAxisAlignment: MainAxisAlignment.center),
+                                SizedBox(height: 10),
+                                Text("------- BOTTOM -------")
+                              ],
+                              mainAxisAlignment: MainAxisAlignment.center,
+                            ))),
+                      ],
+                    ),
+                    // TODO: change colour to nice gradient
+                    color: Colors.blue,
+                  );
+                });
+              });
+        });
+  }
 
-              }
-            );
-          });
-      });
+  Widget topIconRow() {
+    // return LaughDetectionController.currAudioFile.value != null
+    //     ? Text(
+    //         "Currently playing:" + _audioFile!.name,
+    //         textAlign: TextAlign.center,
+    //       )
+    //     : const Text("Nothing playing", textAlign: TextAlign.center);
+    return Container(
+      alignment: Alignment.bottomCenter,
+      // padding: EdgeInsets.only(top: 100.0),
+      width: 200,
+      height: 200,
+      child: photoGetter(
+          "TODO:FIXME - put in current audio files transcript/content"),
+    );
+  }
+
+  Widget descriptorTextRow() {
+    // return Text("hey");
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 30.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Fudge me sideways",
+                  style: TextStyle(
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20)),
+              SizedBox(height: 10),
+              Text("Laugh Detection",
+                  style: TextStyle(
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20)),
+            ],
+          ),
+        )
+      ],
+    );
   }
 
   Widget scrubber() {
@@ -222,7 +267,6 @@ class _AudioPlayerState extends State<AudioPlayer> {
                         duration: _audioDisposition.duration);
               }
               setState(() {});
-
             },
             activeColor: Colors.white,
             inactiveColor: Colors.white24,

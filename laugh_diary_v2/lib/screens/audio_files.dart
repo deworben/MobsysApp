@@ -4,13 +4,12 @@ import 'package:laugh_diary_v2/service/firebase_service.dart';
 import 'package:laugh_diary_v2/static/laugh_detection_controller.dart';
 import '../objects/audio_file.dart';
 import 'package:logger/logger.dart';
-
+import '../service/photo_getter.dart';
 
 // Displays a list of audio files
 // TODO: could wrap in a YourLibrary class
 class AudioFileList extends StatefulWidget {
   const AudioFileList({Key? key}) : super(key: key);
-
 
   @override
   _AudioFileListState createState() => _AudioFileListState();
@@ -27,14 +26,14 @@ class _AudioFileListState extends State<AudioFileList> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<AudioFile>>(
         valueListenable: LaughDetectionController.sortedAudioFiles,
-        builder: (BuildContext context, List<AudioFile> _filteredFiles, Widget? child) {
+        builder: (BuildContext context, List<AudioFile> _filteredFiles,
+            Widget? child) {
           this._filteredFiles = _filteredFiles;
           logger.e("UPDATING AUDIOFILE LIST");
           return Column(
             children: [
               AppBar(
                 title: const Text("Gallery"),
-
               ),
 
               Container(
@@ -53,23 +52,18 @@ class _AudioFileListState extends State<AudioFileList> {
                     });
                   },
                   items: [
+                    DropdownMenuItem(value: SortBy.all, child: Text("All")),
                     DropdownMenuItem(
-                        value: SortBy.all,
-                        child: Text("All")),
-                    DropdownMenuItem(
-                        value: SortBy.favourites,
-                        child: Text("Favourites")),
-                    DropdownMenuItem(
-                        value: SortBy.name,
-                        child: Text("Name")),
+                        value: SortBy.favourites, child: Text("Favourites")),
+                    DropdownMenuItem(value: SortBy.name, child: Text("Name")),
                   ],
                 ),
               ),
               // TODO: THIS IS UPDATED!!!
               Expanded(
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: createListElements(),
+                    child: Column(
+                  children: createListElements(),
                 )),
               )
             ],
@@ -87,7 +81,6 @@ class _AudioFileListState extends State<AudioFileList> {
 
   // get the most recent n audio files
   Future loadAudioFiles() async {
-
     LaughDetectionController.audioFiles.value = await fbService.listFiles();
     LaughDetectionController.sortAudioList(_currSortBy);
     // setState(() { });
@@ -111,10 +104,7 @@ class _AudioFileListState extends State<AudioFileList> {
   List<AudioFileListElement> createListElements() {
     return _filteredFiles.map((f) => AudioFileListElement(f)).toList();
   }
-
 }
-
-
 
 // Displays a single audio file, also contains audio file info
 class AudioFileListElement extends StatefulWidget {
@@ -128,92 +118,113 @@ class AudioFileListElement extends StatefulWidget {
 }
 
 class _AudioFileListElementState extends State<AudioFileListElement> {
-
   Color textColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AudioFile?>(
-      valueListenable: LaughDetectionController.currAudioFile,
-      builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
-        // the clicked audio file should play
-        var _isPlaying = (_audioFile != null) ? widget.audioFile.id == _audioFile.id : false;
+        valueListenable: LaughDetectionController.currAudioFile,
+        builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
+          // the clicked audio file should play
+          var _isPlaying = (_audioFile != null)
+              ? widget.audioFile.id == _audioFile.id
+              : false;
 
-        return Card(
-            child: ListTile(
-                leading: FlutterLogo(),
-                title: Text(
-                  widget.audioFile.name + " " + widget.audioFile.content,
-                  style: TextStyle(color: _isPlaying ? Colors.red : Colors.black),
-                ),
-                subtitle: Text(DateFormat.yMMMd().format(widget.audioFile.date) +
-                    "  " +
-                    widget.audioFile.duration.toString()),
-                onTap: () {
-                  setState(() {
-                    LaughDetectionController.playAudioFile(widget.audioFile);
-                  });
+          return Card(
+              child: ListTile(
+                  leading: photoGetter(widget.audioFile.content),
+                  // leading: FlutterLogo(),
+                  title: Text(
+                    widget.audioFile.name + " " + widget.audioFile.content,
+                    style: TextStyle(
+                        color: _isPlaying ? Colors.red : Colors.black),
+                  ),
+                  subtitle: Text(
+                      DateFormat.yMMMd().format(widget.audioFile.date) +
+                          "  " +
+                          widget.audioFile.duration.toString()),
+                  onTap: () {
+                    setState(() {
+                      LaughDetectionController.playAudioFile(widget.audioFile);
+                    });
                   },
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: !widget.audioFile.favourite ? Icon(Icons.favorite_border) : Icon(Icons.favorite),
-                      onPressed: () {
-                        setState(() {
-                          widget.audioFile.favourite = !widget.audioFile.favourite;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.more_vert),
-                      onPressed: () {
-                        showModalBottomSheet(context: context,
-                            isScrollControlled: true,
-                            useRootNavigator: true,
-                            builder: (context) {
-                              return StatefulBuilder(
-                                builder: (BuildContext context, StateSetter updateSelf) {
-                                return Wrap(children: [
-                                  ListTile(
-                                    leading: !widget.audioFile.favourite ? Icon(Icons.favorite_border) : Icon(Icons.favorite),
-                                    title: !widget.audioFile.favourite ? Text("Add to Favourites",) : Text("Remove from Favourites",),
-                                    tileColor: Colors.green,
-                                    onTap: () {
-                                      // update parent widget
-                                      setState(() {
-                                        widget.audioFile.favourite = !widget.audioFile.favourite;
-                                      });
-                                      // update stateful builder in ModelBottomSheet
-                                      updateSelf ((){});
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.drive_file_rename_outline),
-                                    title: Text("Rename",),
-                                    onTap: () {
-                                      showDialog(context: context, builder:
-                                      (context) {
-                                        return setNameDialog(context);
-                                      });
-                                      setState(() {});
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.delete),
-                                    title: Text("Delete",),
-                                  ),
-                                ]);
-                              }
-                            );
-                        });
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: !widget.audioFile.favourite
+                            ? Icon(Icons.favorite_border)
+                            : Icon(Icons.favorite),
+                        onPressed: () {
+                          setState(() {
+                            widget.audioFile.favourite =
+                                !widget.audioFile.favourite;
+                          });
                         },
-                    ),
-                  ],
-                )
-            )
-        );
-      });
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.more_vert),
+                        onPressed: () {
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              useRootNavigator: true,
+                              builder: (context) {
+                                return StatefulBuilder(builder:
+                                    (BuildContext context,
+                                        StateSetter updateSelf) {
+                                  return Wrap(children: [
+                                    ListTile(
+                                      leading: !widget.audioFile.favourite
+                                          ? Icon(Icons.favorite_border)
+                                          : Icon(Icons.favorite),
+                                      title: !widget.audioFile.favourite
+                                          ? Text(
+                                              "Add to Favourites",
+                                            )
+                                          : Text(
+                                              "Remove from Favourites",
+                                            ),
+                                      tileColor: Colors.green,
+                                      onTap: () {
+                                        // update parent widget
+                                        setState(() {
+                                          widget.audioFile.favourite =
+                                              !widget.audioFile.favourite;
+                                        });
+                                        // update stateful builder in ModelBottomSheet
+                                        updateSelf(() {});
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading:
+                                          Icon(Icons.drive_file_rename_outline),
+                                      title: Text(
+                                        "Rename",
+                                      ),
+                                      onTap: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return setNameDialog(context);
+                                            });
+                                        setState(() {});
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: Icon(Icons.delete),
+                                      title: Text(
+                                        "Delete",
+                                      ),
+                                    ),
+                                  ]);
+                                });
+                              });
+                        },
+                      ),
+                    ],
+                  )));
+        });
   }
 
   Widget setNameDialog(context) {
@@ -221,16 +232,21 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
     return AlertDialog(
       title: Text("AudioFile Name"),
       content: TextFormField(
-        onChanged: (value) {valueText = value;},
+        onChanged: (value) {
+          valueText = value;
+        },
         initialValue: widget.audioFile.name,
         decoration: InputDecoration(hintText: "Enter name here"),
       ),
       actions: [
         TextButton(
           child: Text("Cancel"),
-          onPressed: () {setState(() {
-            Navigator.pop(context);
-          });},),
+          onPressed: () {
+            setState(() {
+              Navigator.pop(context);
+            });
+          },
+        ),
         TextButton(
           child: Text("Accept"),
           onPressed: () {
@@ -238,7 +254,8 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
             setState(() {
               Navigator.pop(context);
             });
-          },),
+          },
+        ),
       ],
     );
   }
