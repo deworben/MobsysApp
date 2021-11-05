@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laugh_diary_v2/service/firebase_service.dart';
@@ -67,12 +65,13 @@ class _AudioFileListState extends State<AudioFileList> {
                   ],
                 ),
               ),
-
+              // TODO: THIS IS UPDATED!!!
               Expanded(
-                  child: ListView(
+                child: SingleChildScrollView(
+                  child: Column(
                     children: createListElements(),
-                    shrinkWrap: true,
-                  ))
+                )),
+              )
             ],
           );
         });
