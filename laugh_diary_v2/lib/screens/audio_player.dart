@@ -395,4 +395,20 @@ class _AudioPlayerState extends State<AudioPlayer> {
     await LaughDetectionController.audioPlayPausePressed();
     setState(() {});
   }
+
+  Future<void> prevButtonPressed() async {
+    // setState(() {
+    //   LaughDetectionController.audioPlayPausePressed();
+    // });
+    await LaughDetectionController.skipPrevAudioFile();
+    setState(() {});
+  }
+
+  Future<void> nextButtonPressed() async {
+    // setState(() {
+    //   LaughDetectionController.audioPlayPausePressed();
+    // });
+    await LaughDetectionController.skipNextAudioFile();
+    setState(() {});
+  }
 }

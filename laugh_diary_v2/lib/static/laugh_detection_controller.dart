@@ -102,10 +102,11 @@ class LaughDetectionController {
       return false;
     }
 
-    if (isPlaying.value || _laughDetector.isPaused()) {
-      await _laughDetector.stopPlayback();
-    }
 
+    // if (isPlaying.value || !_laughDetector.player!.isStopped) {
+      await _laughDetector.stopPlayback();
+      isPlaying.value = false;
+    // }
 
     AudioFile _newAudioFile = AudioFile.clone(audioFile);
 
@@ -128,19 +129,6 @@ class LaughDetectionController {
     logger.e(_newAudioFile.id);
     // print(Directory("${tempDir.path}")).list
 
-    // update list with new audioFile
-    // for (int i=0; i < audioFiles.value.length; i++) {
-    //   // check if id is the same
-    //   if (_newAudioFile.id == audioFiles.value[i].id) {
-    //     // update lists with new _audioFile
-    //     audioFiles.value[i] = _newAudioFile;
-    //     audioFiles.value = List.from(audioFiles.value);
-    //     sortAudioList(_sortBy);
-    //     break;
-    //   }
-    // }
-
-
 
 
     // check if need to update current audio file
@@ -148,8 +136,11 @@ class LaughDetectionController {
       currAudioFile.value = _newAudioFile;
     }
 
-    isPlaying.value = true;
+
+
+
     await _laughDetector.startPlayback(_newAudioFile.filePath!, onComplete);
+    isPlaying.value = true;
 
     return true;
   }
@@ -218,9 +209,10 @@ class LaughDetectionController {
       }
       return false;
     }
-    if (isPlaying.value) {
-      await _laughDetector.stopPlayback();
-    }
+    // if (isPlaying.value || _laughDetector.isPaused()) {
+    //   await _laughDetector.stopPlayback();
+    //   isPlaying.value = false;
+    // }
 
     // check if there are audio files in list
     if (sortedAudioFiles.value.isEmpty) {
@@ -230,7 +222,7 @@ class LaughDetectionController {
 
     for (var i=0; i < sortedAudioFiles.value.length; i++) {
       // if found audio file in list
-      if (currAudioFile.value == sortedAudioFiles.value[i]) {
+      if (currAudioFile.value!.id == sortedAudioFiles.value[i].id) {
         // if audio file isn't first item
         if (i > 0) {
           // play prev file in list
@@ -240,7 +232,7 @@ class LaughDetectionController {
       }
     }
     // just play the last item
-    await playAudioFile(sortedAudioFiles.value[-1]);
+    await playAudioFile(sortedAudioFiles.value.last);
     return true;
   }
 
