@@ -7,7 +7,7 @@ class AudioFile {
 
   DateTime date;
 
-  Duration duration;
+  Duration? duration;
 
   String content;
 
