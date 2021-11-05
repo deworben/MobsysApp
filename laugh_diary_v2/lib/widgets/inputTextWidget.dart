@@ -47,9 +47,9 @@ class InputTextWidget extends StatelessWidget {
                   border: InputBorder.none,
                 ),
                 validator: (val) {
-                  if (val!.isEmpty) {
-                    return 'le champ de texte est vide!';
-                  }
+                  // if (val!.isEmpty) {
+                  //   return 'Input can't be empty!';
+                  // }
                 }),
           ),
         ),
