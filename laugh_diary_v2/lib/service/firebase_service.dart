@@ -224,13 +224,10 @@ class FirebaseService {
         numLaughsPerHourOverLastDay.add(numLaughs);
       }
 
-      print("numLaughsPerHourOverLastDay = ${numLaughsPerHourOverLastDay}");
-      print("$counter");
-      print("-------------");
+      // print("numLaughsPerHourOverLastDay = ${numLaughsPerHourOverLastDay}");
+      // print("$counter");
+      // print("-------------");
     });
-
-    var dur = Duration(milliseconds: 500);
-    Future.delayed(dur);
 
     // Future.delayed(Duration(milliseconds: 500) );
     return numLaughsPerHourOverLastDay;
