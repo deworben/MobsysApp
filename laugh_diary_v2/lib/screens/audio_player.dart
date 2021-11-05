@@ -28,6 +28,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
               valueListenable: LaughDetectionController.isPlaying,
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
+
                 return bottomBarView(context);
                 // return _isMinimised ? bottomBarView(context) : fullScreenView(context);
               });
@@ -52,6 +53,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                         //     MaterialPageRoute(
                         //         builder:
                         //     ));
+
 
                         showModalBottomSheet(
                             context: context,
@@ -118,78 +120,78 @@ class _AudioPlayerState extends State<AudioPlayer> {
 
   // TODO: cover bottom app bar?
   Widget fullScreenView(context) {
-    
-    return StatefulBuilder(
-        builder: (BuildContext context, StateSetter updateSelf) {
+    return ValueListenableBuilder<AudioFile?>(
+      valueListenable: LaughDetectionController.currAudioFile,
+      builder: (BuildContext context, AudioFile? _audioFile, Widget? child) {
+        this._audioFile = _audioFile;
+        return ValueListenableBuilder<bool>(
+          valueListenable: LaughDetectionController.isPlaying,
+          builder: (BuildContext context, bool _isPlaying, Widget? child) {
+            this._isPlaying = _isPlaying;
 
-
-    
-    return Container(
-      child: Column(
-        children: [
-          AppBar(
-              leading: IconButton(
-            onPressed: () {
-              setState(() {
-                Navigator.pop(context);
-                // _isMinimised = true;
-              });
-            },
-            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          )),
-          Expanded(
-              child: Column(
-            children: [
-              LaughDetectionController.currAudioFile.value != null
-                  ? Text(
-                      "Currently playing:" + _audioFile!.name,
-                      textAlign: TextAlign.center,
-                    )
-                  : const Text("Nothing playing", textAlign: TextAlign.center),
-              Row(
-                children: [
-
-                  IconButton(
-                    onPressed: () {
-                      playPauseButtonPressed();
-                      updateSelf(() {});
-                      setState(() {});
-                    },
-                    icon: LaughDetectionController.isPlaying.value
-                        ? Icon(
-                      Icons.pause_circle_filled,
-                      size: 60,
-                    )
-                        : Icon(
-                      Icons.play_arrow,
-                      size: 60,
-                    ),
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter updateSelf) {
+                return Container(
+                  child: Column(
+                    children: [
+                      AppBar(
+                          leading: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            Navigator.pop(context);
+                            // _isMinimised = true;
+                          });
+                        },
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                      )),
+                      Expanded(
+                          child: Column(
+                        children: [
+                          LaughDetectionController.currAudioFile.value != null
+                              ? Text(
+                                  "Currently playing:" + _audioFile!.name,
+                                  textAlign: TextAlign.center,
+                                )
+                              : const Text("Nothing playing", textAlign: TextAlign.center),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  playPauseButtonPressed();
+                                  updateSelf(() {});
+                                  setState(() {});
+                                },
+                                icon: LaughDetectionController.isPlaying.value
+                                    ? Icon(
+                                  Icons.pause_circle_filled,
+                                  size: 60,
+                                )
+                                    : Icon(
+                                  Icons.play_arrow,
+                                  size: 60,
+                                ),
+                              ),
+                              nextButton(),
+                            ],
+                          ),
+                          scrubber(),
+                          Row(children: [
+                            coverPhoto(),
+                            transcript(),
+                          ], mainAxisAlignment: MainAxisAlignment.center),
+                        ],
+                        mainAxisAlignment: MainAxisAlignment.center,
+                      )),
+                    ],
                   ),
+                  // TODO: change colour to nice gradient
+                  color: Colors.blue,
+                );
 
-
-                  // playPauseButton(60),
-
-
-
-                  nextButton(),
-                ],
-              ),
-              scrubber(),
-              Row(children: [
-                coverPhoto(),
-                transcript(),
-              ], mainAxisAlignment: MainAxisAlignment.center),
-            ],
-            mainAxisAlignment: MainAxisAlignment.center,
-          )),
-        ],
-      ),
-      // TODO: change colour to nice gradient
-      color: Colors.blue,
-    );
-
-        }
-    );
+              }
+            );
+          });
+      });
   }
 
   Widget scrubber() {
