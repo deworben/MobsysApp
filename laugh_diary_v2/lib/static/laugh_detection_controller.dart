@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:laugh_diary_v2/service/firebase_service.dart';
+import 'package:path_provider/path_provider.dart';
 import 'recording_controller.dart';
 import 'package:laugh_diary_v2/laugh_detector.dart';
 import 'package:logger/logger.dart';
@@ -101,7 +103,19 @@ class LaughDetectionController {
       await _laughDetector.stopPlayback();
     }
 
-    audioFile = await fbService.downloadFile(audioFile.id);
+    if (audioFile.filePath == null ) {
+      var tempDir = await getTemporaryDirectory();
+      var filePath = '${tempDir.path}/${audioFile.id}.pcm';
+      var outFile = File(filePath);
+      if (outFile.existsSync()) {
+        audioFile.filePath = filePath;
+      }
+      else {
+        audioFile = await fbService.downloadFile(audioFile.id);
+      }
+    }
+
+
 
     // check if need to update current audio file
     if (currAudioFile.value != audioFile) {
