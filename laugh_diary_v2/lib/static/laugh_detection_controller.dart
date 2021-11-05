@@ -187,7 +187,7 @@ class LaughDetectionController {
 
     for (var i=0; i < sortedAudioFiles.value.length; i++) {
       // if found audio file in list
-      if (currAudioFile.value == sortedAudioFiles.value[i]) {
+      if (currAudioFile.value!.id == sortedAudioFiles.value[i].id) {
         // if audio file isn't last item
         if (i + 1 < sortedAudioFiles.value.length) {
           // play next file in list
