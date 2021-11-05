@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:math';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -29,6 +30,8 @@ import 'static/laugh_detection_controller.dart';
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
 typedef DetectionCallBack = void Function(
     String, bool, double, double, String, String, int);
+typedef SpectralCallBack = void Function(double);
+typedef SaveEnableCallBack = void Function();
 typedef PlaybackCompleteCallBack = void Function();
 
 class LaughDetector {
@@ -121,8 +124,14 @@ class LaughDetector {
       List<int> bufferCopy,
       List<List<int>> prevBuffersCopy,
       RealtimeCallBack onBuffer,
-      DetectionCallBack onDetect) async {
+      DetectionCallBack onDetect,
+      SpectralCallBack onSpectral,
+      SaveEnableCallBack onSaveEnable) async {
     bufferCopy = bufferCopy.take(maxBufferSize).toList();
+
+    var spectral = bufferCopy.reduce((a, b) => a + b).toDouble() / buffer.length;
+    onSpectral(spectral);
+
     var samples = Uint8List.fromList(bufferCopy)
         .buffer
         .asInt16List()
@@ -156,6 +165,7 @@ class LaughDetector {
       if (prevConsistentlyLaughing && !consistentlyLaughing) {
         prevPredictions =
             List.filled(prevPredictions.length, 0, growable: true);
+        onSaveEnable();
       }
       prevConsistentlyLaughing = consistentlyLaughing;
     });
@@ -202,6 +212,7 @@ class LaughDetector {
           content, located, latitude, longitude, fileId, filePath, duration);
     }
 
+
     onBuffer(currentlyLaughing, located, latitude, longitude);
   }
 
@@ -209,7 +220,10 @@ class LaughDetector {
   /// so it keeps adding the buffer.
   /// but processing are mostly done on the side.
   Future<void> startDetection(
-      RealtimeCallBack onBuffer, DetectionCallBack onDetect) async {
+      RealtimeCallBack onBuffer,
+      DetectionCallBack onDetect,
+      SpectralCallBack onSpectral,
+      SaveEnableCallBack onSaveEnable) async {
     if (!recorderOpened || !recorder!.isStopped) {
       return;
     }
@@ -227,7 +241,7 @@ class LaughDetector {
               prevBuffers.removeAt(0);
             }
             processBuffer(
-                List.from(buffer), List.from(prevBuffers), onBuffer, onDetect);
+                List.from(buffer), List.from(prevBuffers), onBuffer, onDetect, onSpectral, onSaveEnable);
             buffer = List.from([]);
           }
         });

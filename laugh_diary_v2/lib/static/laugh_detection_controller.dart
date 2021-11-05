@@ -13,6 +13,8 @@ import 'package:flutter_sound/flutter_sound.dart';
 typedef RealtimeCallBack = void Function(bool, bool, double, double);
 typedef DetectionCallBack = void Function(
     String, bool, double, double, String, String, int);
+typedef SpectralCallBack = void Function(double);
+typedef SaveEnableCallBack = void Function();
 typedef PlaybackCompleteCallBack = void Function();
 
 // Notifies listeners when values change
@@ -219,7 +221,10 @@ class LaughDetectionController {
   }
 
   static Future<bool> recordStartStopPressed(
-      RealtimeCallBack onBuffer, DetectionCallBack onDetect) async {
+      RealtimeCallBack onBuffer,
+      DetectionCallBack onDetect,
+      SpectralCallBack onSpectral,
+      SaveEnableCallBack onSaveEnable) async {
     // can't record if playing audio or uninitialised
     if (isPlaying.value || !initialised) {
       if (isRecording.value) {
@@ -232,7 +237,7 @@ class LaughDetectionController {
     isRecording.value = !isRecording.value;
 
     if (isRecording.value) {
-      await _laughDetector.startDetection(onBuffer, onDetect);
+      await _laughDetector.startDetection(onBuffer, onDetect, onSpectral, onSaveEnable);
     } else {
       await _laughDetector.stopDetection();
     }

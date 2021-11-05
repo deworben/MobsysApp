@@ -18,10 +18,11 @@ class AudioRecorder extends StatefulWidget {
 class _AudioRecorderState extends State<AudioRecorder> {
   bool _isRecording = false;
   bool _currStatus = false; // either laughing or not laughing
-  List<double> xCoors = [0, 1, 2, 3, 4, 5];
-  List<double> yCoors = [0, -100, 80, 100, 50, 0];
+  List<double> xCoors = [0, 1, 2, 3, 4, 5, 6];
+  List<double> yCoors = [0, 0, 0, 50, 0, 0, 0];
   Duration _elapsedTime = const Duration();
   Timer? timer;
+  bool saveEnabled = true;
 
   // states that you want to use and update in your view
   var state = 0;
@@ -48,11 +49,11 @@ class _AudioRecorderState extends State<AudioRecorder> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                lastSavedAudioFile(),
-                currentStatus(),
-                lineCard(xCoors, yCoors, 1),
+                lineCard(xCoors, yCoors),
                 elapsedTime(),
                 stopStartButton(),
+                currentStatus(),
+                lastSavedAudioFile()
               ],
             ),
           );
@@ -79,7 +80,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
       ),
       child: TextButton(
           onPressed: () {
-            LaughDetectionController.recordStartStopPressed(onBuffer, onDetect)
+            LaughDetectionController.recordStartStopPressed(onBuffer, onDetect, onSpectral, onSaveEnable)
                 .then((_) {
               triggerTimer();
             });
@@ -111,57 +112,72 @@ class _AudioRecorderState extends State<AudioRecorder> {
   }
 
   Widget currentStatus() {
-    if (_isRecording) {
-      return Container(
-        margin: EdgeInsets.all(30.0),
-        child: Text(
-            "Current Status: " + (_currStatus ? "Not Laughing" : "Laughing"),
-            style: TextStyle(fontSize: 15)),
-      );
-    } else {
-      // return empty widget
-      return SizedBox.shrink();
+    var statusText = "Talking";
+    if (_currStatus) {
+      statusText = "Laughing";
     }
+    if (!_isRecording) {
+      statusText = "Ready";
+    }
+
+    return Container(
+        alignment: Alignment.center,
+        // margin: EdgeInsets.all(2.0),
+        child: Column(
+          children: [
+            const Icon(Icons.insert_chart_outlined_rounded),
+            Text(statusText, style: const TextStyle(fontSize: 15))
+          ],
+        ));
   }
 
   Widget lastSavedAudioFile() {
-    return ValueListenableBuilder<AudioFile?>(
-        valueListenable: LaughDetectionController.lastSavedAudioFile,
-        builder: (BuildContext context, AudioFile? _lastSavedAudioFile,
-            Widget? child) {
-          if (_lastSavedAudioFile != null) {
-            return Column(
-              children: [
-                Text("Recently Saved: ", style: TextStyle(fontSize: 15)),
-                ListTile(
-                  leading: FlutterLogo(),
-                  title: Text(
-                    _lastSavedAudioFile.filePath! +
-                        " " +
-                        _lastSavedAudioFile.content,
-                    style: TextStyle(
-                        color: LaughDetectionController.isPlaying.value
-                            ? Colors.red
-                            : Colors.black),
-                  ),
-                  subtitle: Text(DateFormat.yMMMd()
-                          .format(_lastSavedAudioFile.date) +
-                      "  " +
-                      _lastSavedAudioFile.duration.toString().substring(2, 7)),
-                  onTap: () {
-                    setState(() {
-                      LaughDetectionController.playAudioFile(
-                          _lastSavedAudioFile);
-                    });
-                  },
-                )
-              ],
-            );
-          } else {
-            // return empty widghet
-            return const SizedBox.shrink();
-          }
-        });
+    if (!saveEnabled) {
+      return Container(
+          margin: EdgeInsets.all(20),
+          child: Column(
+            children: const [Icon(Icons.save_alt), Text("New Diary!")],
+          ));
+    } else if (_isRecording) {
+      return Container(
+          margin: EdgeInsets.all(20),
+          child: Column(
+            children: const [
+              Icon(Icons.motion_photos_on_outlined),
+              Text("Capturing Diary", style: TextStyle(fontSize: 15))
+            ],
+          ));
+    } else {
+      return Container(
+          margin: EdgeInsets.all(20),
+          child: Column(
+            children: const [
+              Icon(Icons.motion_photos_off_outlined),
+              Text("Ready", style: TextStyle(fontSize: 15))
+            ],
+          ));
+    }
+    // return ValueListenableBuilder<AudioFile?>(
+    //     valueListenable: LaughDetectionController.lastSavedAudioFile,
+    //     builder: (BuildContext context, AudioFile? _lastSavedAudioFile,
+    //         Widget? child) {
+    //       if (_lastSavedAudioFile != null) {
+    //         return Container(
+    //             margin: EdgeInsets.all(20),
+    //             child: Column(
+    //               children: const [Icon(Icons.save_alt), Text("New Diary!")],
+    //             ));
+    //       } else {
+    //         return Container(
+    //             margin: EdgeInsets.all(20),
+    //             child: Column(
+    //               children: const [
+    //                 Icon(Icons.motion_photos_off_outlined),
+    //                 Text("")
+    //               ],
+    //             ));
+    //       }
+    //     });
   }
 
   // Starts/stops the timer
@@ -180,30 +196,45 @@ class _AudioRecorderState extends State<AudioRecorder> {
     }
   }
 
-  onBuffer(
-      bool laughing, bool located, double latitude, double longitude) async {
+  onBuffer(bool laughing, bool located, double latitude, double longitude) async {
     logger.i(laughing);
     setState(() {
-      _currStatus = !laughing;
+      _currStatus = laughing;
     });
   }
 
   onDetect(String content, bool located, double latitude, double longitude,
       String fileId, String filePath, int duration) async {
     LaughDetectionController.saveAudioId(fileId, filePath, content, duration);
+    setState(() {
+      saveEnabled = false;
+    });
     logger.i(content);
   }
 
-  Widget lineCard(
-      List<double> xCoordinates,
-      List<double> yCoordinates,
-      int lineColorIndex) {
+  onSpectral(double spectral) async {
+    yCoors.removeAt(0);
+    yCoors.add(spectral);
+    setState(() {
+      yCoors = List.from(yCoors);
+    });
+  }
+
+  onSaveEnable() async {
+    setState(() {
+      saveEnabled = true;
+    });
+  }
+
+  Widget lineCard(List<double> xCoordinates, List<double> yCoordinates) {
     List<Color> lineColors = List.from([
       const Color(0xCC77428D),
       const Color(0xCCD0104C),
       const Color(0xCC005CAF),
       const Color(0xCCF05E1C),
     ]);
+
+    var lineColorIndex = _currStatus ? 2 : 1;
 
     List<FlSpot> dataPoints = List.from([]);
     for (var i = 0; i < xCoordinates.length; i++) {
@@ -212,6 +243,8 @@ class _AudioRecorderState extends State<AudioRecorder> {
 
     var xMax = xCoordinates.reduce(max);
     var yMax = yCoordinates.reduce(max);
+    var xMin = xCoordinates.reduce(min);
+    var yMin = yCoordinates.reduce(min);
 
     var axisStyles = FlTitlesData(
       rightTitles: SideTitles(showTitles: false),
@@ -227,29 +260,28 @@ class _AudioRecorderState extends State<AudioRecorder> {
     );
 
     var line = LineChartBarData(
-      isCurved: true,
-      colors: [lineColors[lineColorIndex]],
-      barWidth: 5,
-      isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
-      spots: dataPoints
-    );
+        isCurved: true,
+        colors: [lineColors[lineColorIndex]],
+        barWidth: 5,
+        isStrokeCapRound: true,
+        dotData: FlDotData(show: false),
+        spots: dataPoints);
 
     var data = LineChartData(
       gridData: gridStyles,
       titlesData: axisStyles,
       borderData: borderStyles,
       lineBarsData: List.from([line]),
-      minX: 0,
+      minX: xMin,
       maxX: xMax,
       maxY: yMax,
-      minY: 0,
+      minY: yMin,
     );
 
     return Container(
         height: 200,
         // padding: const EdgeInsets.all(20),
-        margin: const EdgeInsets.only(top:20, bottom:20),
+        margin: const EdgeInsets.only(top: 20, bottom: 20),
         child: LineChart(data,
             swapAnimationDuration: const Duration(milliseconds: 250)));
   }
