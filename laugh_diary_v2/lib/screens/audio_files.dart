@@ -33,6 +33,7 @@ class _AudioFileListState extends State<AudioFileList> {
           return Column(
             children: [
               AppBar(
+                backgroundColor: Color(0xFF543884),
                 title: const Text("Gallery"),
               ),
               Card(
@@ -142,18 +143,21 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                 children: [
                   ListTile(
                       // leading: const Icon(Icons.graphic_eq),
-                      leading: photoGetter(widget.audioFile.content),
-                      title: Text(
-                        widget.audioFile.name,
-                        style: TextStyle(color: Colors.black),
+                      leading: Container(
+                          padding: EdgeInsets.only(top: 10, bottom: 5),
+                          child: photoGetter(widget.audioFile.content)
                       ),
-                      subtitle: _isPlaying
+                      // title: Text(
+                      //   widget.audioFile.name,
+                      //   style: TextStyle(color: Colors.black),
+                      // ),
+                      title: _isPlaying
                           ? Row(
                               children: const [
                                 Icon(
                                   Icons.play_circle_fill_rounded,
                                   color: Color(0xFFCB1B45),
-                                  size: 18,
+                                  size: 25,
                                 ),
                                 Text(" Now Playing",
                                     style: TextStyle(color: Color(0xFFCB1B45))),
@@ -256,7 +260,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                     margin: const EdgeInsets.only(
                         left: 16, top: 10, right: 16, bottom: 10),
                     child: Text(widget.audioFile.content == ""
-                        ? "N Transcript not available."
+                        ? "Transcript not available."
                         : widget.audioFile.content),
                   )
                 ],
