@@ -51,6 +51,7 @@ class _DashboardState extends State<Dashboard> {
     return Column(children: [
       AppBar(
         title: const Text("Dashboard"),
+        backgroundColor: Color(0xFF543884),
       ),
       Expanded(
         child: SingleChildScrollView(

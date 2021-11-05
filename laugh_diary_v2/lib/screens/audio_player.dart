@@ -109,7 +109,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
           ),
           // color: Colors.blue,
           decoration: BoxDecoration(
-            color: Colors.red,// Theme.of(context).colorScheme.secondary,
+            color: Color(0xFFCB92FF),// Theme.of(context).colorScheme.secondary,
             // color: Colors.white,
             border: Border.all(
               color: Colors.white30,
