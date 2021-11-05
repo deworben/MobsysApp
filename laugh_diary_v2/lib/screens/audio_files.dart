@@ -151,7 +151,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                       // ),
                       title: _isPlaying
                           ? Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.play_circle_fill_rounded,
                                   color: Color(0xFFCB1B45),
@@ -224,27 +224,6 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                                             // update stateful builder in ModelBottomSheet
                                             updateSelf(() {});
                                           },
-                                        ),
-                                        ListTile(
-                                          leading: const Icon(
-                                              Icons.drive_file_rename_outline),
-                                          title: const Text(
-                                            "Rename",
-                                          ),
-                                          onTap: () {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return setNameDialog(context);
-                                                });
-                                            setState(() {});
-                                          },
-                                        ),
-                                        const ListTile(
-                                          leading: Icon(Icons.delete),
-                                          title: Text(
-                                            "Delete",
-                                          ),
                                         ),
                                       ]);
                                     });

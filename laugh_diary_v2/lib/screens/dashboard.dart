@@ -82,9 +82,9 @@ class _DashboardState extends State<Dashboard> {
     ]);
 
     List<FlSpot> dataPoints = List.from([]);
-    if (yCoordinates.length != xCoordinates.length) {
-      yCoordinates = List.filled(xCoordinates.length, 0);
-    }
+    // if (yCoordinates.length != xCoordinates.length) {
+    //   yCoordinates = List.filled(xCoordinates.length, 0);
+    // }
 
     for (var i = 0; i < xCoordinates.length; i++) {
       dataPoints.add(FlSpot(xCoordinates[i], yCoordinates[i]));

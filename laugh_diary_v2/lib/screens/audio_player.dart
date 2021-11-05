@@ -4,6 +4,7 @@ import '../objects/audio_file.dart';
 import '../static/laugh_detection_controller.dart';
 import '../service/photo_getter.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'dart:math';
 
 class AudioPlayer extends StatefulWidget {
   const AudioPlayer({Key? key}) : super(key: key);
@@ -76,9 +77,9 @@ class _AudioPlayerState extends State<AudioPlayer> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _audioFile != null
-                                  ? Text(_audioFile!.name,
+                                  ? Text(_audioFile!.content.substring(0, min(38, _audioFile!.content.length)) + (_audioFile!.content.length > 38 ? "..." : ""),
                                       style: TextStyle(
-                                          color: Colors.grey[700],
+                                          color: Colors.grey[900],
                                           fontWeight: FontWeight.bold))
                                   : Text(
                                       "Nothing playing",

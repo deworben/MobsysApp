@@ -26,7 +26,7 @@ class FirebaseService {
         .collection('audio');
     ref.doc(audioFile.id).set({
       'id': audioFile.id,
-      'duration': audioFile.duration.toString(),
+      // 'duration': audioFile.duration.toString(),
       'content': audioFile.content,
       'datetime': Timestamp.fromDate(DateTime.now()),
     });

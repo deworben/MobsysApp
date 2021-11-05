@@ -98,7 +98,7 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                           style: ElevatedButton.styleFrom(primary: Color(0xFF6C48AA)), //Color(0xFF6C48AA)4285f4
                             child: Container(
                               alignment: Alignment.center,
-                              width: 100,
+                              width: 305,
                               child: Text(
                                 'Sign In',
                               ),
@@ -109,23 +109,23 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                                   context, _email, _password);
                               setState(() {});
                             }),
-                        ElevatedButton(
-                            style: ElevatedButton.styleFrom(primary: Color(0xFF4285f4)),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: 100,
-                              child: Text(
-                                'Google Sign In',
-                              ),
-                            ),
-                            // Text('Sign In'),
-                            onPressed: () async {
-                              await signInWGoogle();
-                              // _loginErrTxt = await signInWGoogle();
-                              print("finished signinwgoogle");
-                              // }
-                              setState(() {});
-                            }),
+                        // ElevatedButton(
+                        //     style: ElevatedButton.styleFrom(primary: Color(0xFF4285f4)),
+                        //     child: Container(
+                        //       alignment: Alignment.center,
+                        //       width: 100,
+                        //       child: Text(
+                        //         'Google Sign In',
+                        //       ),
+                        //     ),
+                        //     // Text('Sign In'),
+                        //     onPressed: () async {
+                        //       await signInWGoogle();
+                        //       // _loginErrTxt = await signInWGoogle();
+                        //       print("finished signinwgoogle");
+                        //       // }
+                        //       setState(() {});
+                        //     }),
                       ]),
                 ],
               ),
