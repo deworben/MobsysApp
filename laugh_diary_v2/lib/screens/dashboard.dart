@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:laugh_diary_v2/service/firebase_service.dart';
+import 'package:logger/logger.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -13,57 +15,48 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  // String? cities;
-  // GeocodeData? coder;
+
+  List<double> yCoors = List.filled(24, 0);
+
+  var fbService = FirebaseService();
+  var logger = Logger();
 
   @override
   void initState() {
     super.initState();
-    // loadCoder();
 
-    // TODO: Load all data here and call setstate.
+    yCoors = fbService.getNumLaughsPerHourOverLastDay();
+    setState(() {});
   }
-  //
-  // void loadCoder() async {
-  //   cities = await rootBundle.loadString('assets/images/cities15000.txt');
-  //   coder = GeocodeData(
-  //       cities!, //input string
-  //       'name',
-  //       'country code',
-  //       'latitude',
-  //       'longitude',
-  //       fieldDelimiter: '\t',
-  //       eol: '\n');
-  // }
+
 
   @override
   Widget build(BuildContext context) {
-    /// TODO: I need EXACTLY 24 x coordinates and 24 y coordinates.
-    List<double> dummyX = List.from([]);
+    List<double> x = List.filled(24, 0);
     for (var i = 0; i < 24; i++) {
-      dummyX.add(i.toDouble());
+      x[i] = i.toDouble();
     }
-    List<double> dummyY = List.from([]);
+
+    List<double> demoY = List.filled(24, 0);
+    var rng = new Random();
     for (var i = 0; i < 24; i++) {
-      dummyY.add(i.toDouble());
+      demoY[i] = rng.nextInt(100).toDouble();
     }
+
 
     return Column(children: [
       AppBar(
         title: const Text("Dashboard"),
+        backgroundColor: Color(0xFF543884),
       ),
       Expanded(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              lineCard("Today", "The number of laughter per hour today.",
-                  dummyX, dummyY, 5, 9, 1, 2, 0),
-              lineCard("Laugh Count", "The number of laughter per hour today.",
-                  dummyX, dummyY, 5, 9, 1, 2, 1),
-              lineCard("Laugh Count", "The number of laughter per hour today.",
-                  dummyX, dummyY, 5, 9, 1, 2, 2),
-              lineCard("Laugh Count", "The number of laughter per hour today.",
-                  dummyX, dummyY, 5, 9, 1, 2, 3)
+              lineCard("Today", "How many times you laughed today.",
+                  x, yCoors, 5, 9, 1, 2, 0),
+              lineCard("Demo", "Demonstrating the visual for a user with lots of data.",
+                  x, demoY, 5, 9, 1, 20, 1)
             ],
           ),
         ),
@@ -89,6 +82,10 @@ class _DashboardState extends State<Dashboard> {
     ]);
 
     List<FlSpot> dataPoints = List.from([]);
+    if (yCoordinates.length != xCoordinates.length) {
+      yCoordinates = List.filled(xCoordinates.length, 0);
+    }
+
     for (var i = 0; i < xCoordinates.length; i++) {
       dataPoints.add(FlSpot(xCoordinates[i], yCoordinates[i]));
     }
@@ -157,6 +154,7 @@ class _DashboardState extends State<Dashboard> {
 
     var line = LineChartBarData(
       isCurved: true,
+      preventCurveOverShooting: true,
       colors: [lineColors[lineColorIndex]],
       barWidth: 2,
       isStrokeCapRound: true,
@@ -190,7 +188,7 @@ class _DashboardState extends State<Dashboard> {
       child: Column(
         children: [
           ListTile(
-            title: Text(title),
+            title: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
             subtitle: Text(subtitle),
           ),
           Container(

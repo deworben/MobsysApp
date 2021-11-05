@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:geocoder_offline/geocoder_offline.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:logger/logger.dart';
 import '../static/laugh_detection_controller.dart';
@@ -23,6 +25,9 @@ class _AudioRecorderState extends State<AudioRecorder> {
   Duration _elapsedTime = const Duration();
   Timer? timer;
   bool saveEnabled = true;
+  String? cities;
+  GeocodeData? coder;
+  String? location;
 
   // states that you want to use and update in your view
   var state = 0;
@@ -53,17 +58,31 @@ class _AudioRecorderState extends State<AudioRecorder> {
                 elapsedTime(),
                 stopStartButton(),
                 currentStatus(),
-                lastSavedAudioFile()
+                lastSavedAudioFile(),
+                locationStatus()
               ],
             ),
           );
         });
   }
 
+  void loadCoder() async {
+    cities = await rootBundle.loadString('assets/cities15000.txt');
+    coder = GeocodeData(
+        cities!, //input string
+        'name',
+        'country code',
+        'latitude',
+        'longitude',
+        fieldDelimiter: '\t',
+        eol: '\n');
+  }
+
   @override
   void initState() {
     super.initState();
     LaughDetectionController.initLaughDetector();
+    loadCoder();
   }
 
   Widget stopStartButton() {
@@ -127,6 +146,23 @@ class _AudioRecorderState extends State<AudioRecorder> {
           children: [
             const Icon(Icons.insert_chart_outlined_rounded),
             Text(statusText, style: const TextStyle(fontSize: 15))
+          ],
+        ));
+  }
+
+  Widget locationStatus() {
+    var locationText = "Ready";
+    if (location != null) {
+      locationText = location!;
+    }
+
+    return Container(
+        alignment: Alignment.center,
+        // margin: EdgeInsets.all(2.0),
+        child: Column(
+          children: [
+            const Icon(Icons.location_on),
+            Text(locationText, style: const TextStyle(fontSize: 15))
           ],
         ));
   }
@@ -197,7 +233,12 @@ class _AudioRecorderState extends State<AudioRecorder> {
   }
 
   onBuffer(bool laughing, bool located, double latitude, double longitude) async {
-    logger.i(laughing);
+    try {
+      var locPrediction = coder!.search(latitude, longitude).first;
+      location = locPrediction.location.featureName;
+    } catch (_) {
+      logger.e("Cannot predict location.");
+    }
     setState(() {
       _currStatus = laughing;
     });
@@ -209,7 +250,6 @@ class _AudioRecorderState extends State<AudioRecorder> {
     setState(() {
       saveEnabled = false;
     });
-    logger.i(content);
   }
 
   onSpectral(double spectral) async {

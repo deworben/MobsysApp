@@ -11,7 +11,7 @@ Future<String> siginInLogic(
   FirebaseAuth auth = FirebaseAuth.instance;
 
   try {
-    // await auth.signInWithEmailAndPassword(email: email, password: password);
+    await auth.signInWithEmailAndPassword(email: email, password: password);
     print("singing in with user = $email and password = $password");
     // setState(() {
     //   login_err_txt = "";
@@ -27,7 +27,7 @@ Future<String> siginInLogic(
     // });
     print("oh noes");
     print(error);
-    return error.toString();
+    return "ERROR logging in: " + error.toString();
   }
 }
 

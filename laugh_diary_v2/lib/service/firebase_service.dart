@@ -184,4 +184,52 @@ class FirebaseService {
     print("Final output = ${List.from(audioFileList)}");
     return List.from(audioFileList);
   }
+
+  List<double> getNumLaughsPerHourOverLastDay() {
+    List<double> numLaughsPerHourOverLastDay = [];
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc('tim')
+        .collection('audio')
+        .get()
+        .then((snapshot) {
+      //Get current time
+      var now = DateTime.now();
+
+      // Get datetime 24 hours ago
+      var yesterday = now.subtract(Duration(days: 1));
+
+      // For every hour fromTime, starting 24 hours before,
+      //  Get all the documents that are between fromTime and fromTime+1hr.
+      //  Count this and put it in the list.
+      int counter = 0;
+      for (DateTime fromTime = yesterday;
+          fromTime.isBefore(now);
+          fromTime = fromTime.add(Duration(hours: 1))) {
+        // iterate through all hours
+        counter = counter + 1;
+        int numLaughs = 0;
+
+        // iterate through all documents and find the ones that are within the hour
+        snapshot.docs.forEach((doc) {
+          var docDatetime =
+              DateTime.parse(doc.data()['datetime'].toDate().toString());
+          if (docDatetime.isAfter(fromTime) &&
+              docDatetime.isBefore(fromTime.add(Duration(hours: 1)))) {
+            numLaughs += 1;
+          }
+        });
+
+        // Add numLaughs to the list
+        numLaughsPerHourOverLastDay.add(numLaughs.toDouble());
+      }
+
+      // print("numLaughsPerHourOverLastDay = ${numLaughsPerHourOverLastDay}");
+      // print("$counter");
+      // print("-------------");
+    });
+
+    // Future.delayed(Duration(milliseconds: 500) );
+    return numLaughsPerHourOverLastDay;
+  }
 }
