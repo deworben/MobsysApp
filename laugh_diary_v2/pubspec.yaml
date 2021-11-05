@@ -61,6 +61,7 @@ dependencies:
   fl_chart: ^0.40.2
   google_maps_flutter: ^2.1.0
   geocoder_offline: ^0.2.1
+  lemmatizer:
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +86,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/images/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

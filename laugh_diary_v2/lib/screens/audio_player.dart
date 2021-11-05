@@ -152,37 +152,36 @@ class _AudioPlayerState extends State<AudioPlayer> {
                               children: [
                                 SizedBox(height: 100),
                                 topIconRow(),
-                                descriptorTextRow(),
-                                Row(
-                                  children: [
-                                    // play/pause icon button
-                                    IconButton(
-                                      onPressed: () {
-                                        playPauseButtonPressed();
-                                        updateSelf(() {});
-                                        setState(() {});
-                                      },
-                                      icon: LaughDetectionController
-                                              .isPlaying.value
-                                          ? Icon(
-                                              Icons.pause_circle_filled,
-                                              size: 60,
-                                            )
-                                          : Icon(
-                                              Icons.play_arrow,
-                                              size: 60,
+                                Container(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: DecoratedBox(
+                                    decoration: const BoxDecoration(
+                                        color: Colors.grey,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20))),
+                                    child: Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: Column(
+                                          children: [
+                                            Divider(
+                                              color: Colors.black,
+                                              thickness: 5,
                                             ),
-                                    ),
-                                    // play next icon button
-                                    nextButton(),
-                                  ],
+                                            descriptorTextRow(),
+                                            forwardBackPlay(updateSelf),
+                                            scrubber(),
+                                            Row(
+                                                children: [
+                                                  coverPhoto(),
+                                                  transcript(),
+                                                ],
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center),
+                                            SizedBox(height: 10),
+                                          ],
+                                        )),
+                                  ),
                                 ),
-                                scrubber(),
-                                Row(children: [
-                                  coverPhoto(),
-                                  transcript(),
-                                ], mainAxisAlignment: MainAxisAlignment.center),
-                                SizedBox(height: 10),
                                 Text("------- BOTTOM -------")
                               ],
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -190,11 +189,61 @@ class _AudioPlayerState extends State<AudioPlayer> {
                       ],
                     ),
                     // TODO: change colour to nice gradient
-                    color: Colors.blue,
+                    color: Colors.white,
                   );
                 });
               });
         });
+  }
+
+  Widget forwardBackPlay(StateSetter updateSelf) {
+    return SizedBox(
+        height: 80,
+        child: Container(
+            alignment: Alignment.center,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // play/pause icon button
+                SizedBox(
+                  height: 70,
+                  child: IconButton(
+                    onPressed: () {
+                      playPauseButtonPressed();
+                      updateSelf(() {});
+                      setState(() {});
+                    },
+                    icon: LaughDetectionController.isPlaying.value
+                        ? Icon(
+                            Icons.pause_circle_filled,
+                            size: 60,
+                          )
+                        : Icon(
+                            Icons.play_arrow,
+                            size: 60,
+                          ),
+                  ),
+                ),
+
+                SizedBox(width: 50),
+                // play next icon button
+                SizedBox(
+                    width: 70,
+                    height: 70,
+                    child: Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.only(top: 0.0),
+                        child: IconButton(
+                          onPressed: () {
+                            LaughDetectionController.skipNextAudioFile();
+                          },
+                          icon: Icon(
+                            Icons.skip_next,
+                            size: 30,
+                          ),
+                        ))),
+              ],
+            )));
   }
 
   Widget topIconRow() {
@@ -268,8 +317,8 @@ class _AudioPlayerState extends State<AudioPlayer> {
               }
               setState(() {});
             },
-            activeColor: Colors.white,
-            inactiveColor: Colors.white24,
+            activeColor: Colors.grey,
+            inactiveColor: Colors.grey,
           );
         });
   }
@@ -312,18 +361,6 @@ class _AudioPlayerState extends State<AudioPlayer> {
               Icons.play_arrow,
               size: size,
             ),
-    );
-  }
-
-  Widget nextButton() {
-    return IconButton(
-      onPressed: () {
-        LaughDetectionController.skipNextAudioFile();
-      },
-      icon: Icon(
-        Icons.skip_next,
-        size: 30,
-      ),
     );
   }
 
