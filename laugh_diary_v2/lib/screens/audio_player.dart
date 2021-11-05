@@ -155,6 +155,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                               : const Text("Nothing playing", textAlign: TextAlign.center),
                           Row(
                             children: [
+                              // play/pause icon button
                               IconButton(
                                 onPressed: () {
                                   playPauseButtonPressed();
@@ -171,6 +172,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                   size: 60,
                                 ),
                               ),
+                              // play next icon button
                               nextButton(),
                             ],
                           ),
@@ -212,7 +214,15 @@ class _AudioPlayerState extends State<AudioPlayer> {
             onChanged: (d) async {
               // seek
               await LaughDetectionController.seek(d);
+              if (_audioDisposition != null) {
+                // update value
+                LaughDetectionController.audioDisposition.value =
+                    PlaybackDisposition(
+                        position: Duration(milliseconds: d.floor()),
+                        duration: _audioDisposition.duration);
+              }
               setState(() {});
+
             },
             activeColor: Colors.white,
             inactiveColor: Colors.white24,
