@@ -37,7 +37,8 @@ class _Basic_ScreenState extends State<Basic_Screen> {
 
   Widget buildFullApp(BuildContext context) {
     Widget makeBody() {
-      return Container(
+      return SingleChildScrollView(
+          child: Container(
         padding: EdgeInsets.only(left: 20.0, right: 20.0),
         child: Column(
           children: [
@@ -94,18 +95,11 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         ElevatedButton(
-                            // color: Theme.of(context).accentColor,
                             child: Container(
                               alignment: Alignment.center,
                               width: 100,
                               child: Text(
                                 'Sign In',
-                                // style: TextStyle(
-                                //   fontFamily: 'Segoe UI',
-                                //   fontSize: 20,
-                                //   fontWeight: FontWeight.bold,
-                                //   color: const Color(0xff000000),
-                                // ),
                               ),
                             ),
                             // Text('Sign In'),
@@ -163,10 +157,10 @@ class _Basic_ScreenState extends State<Basic_Screen> {
                 ],
               ),
             ),
-            // Text(_loginErrTxt),
+            Text(_loginErrTxt),
           ],
         ),
-      );
+      ));
     }
 
     return Scaffold(

@@ -11,8 +11,8 @@ class RouteGenerator {
 
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => timsMainScreen());
-        // return MaterialPageRoute(builder: (_) => Basic_Screen());
+        // return MaterialPageRoute(builder: (_) => timsMainScreen());
+        return MaterialPageRoute(builder: (_) => Basic_Screen());
       case '/second':
         // Validation of correct data type
         // return MaterialPageRoute(builder: (_) => Basic_Screen2());

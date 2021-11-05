@@ -66,7 +66,6 @@ class _AudioFileListState extends State<AudioFileList> {
                   ),
                 ),
               ),
-              // TODO: THIS IS UPDATED!!!
               Expanded(
                 child: SingleChildScrollView(
                     child: Column(
@@ -145,8 +144,7 @@ class _AudioFileListElementState extends State<AudioFileListElement> {
                       // leading: const Icon(Icons.graphic_eq),
                       leading: Container(
                           padding: EdgeInsets.only(top: 10, bottom: 5),
-                          child: photoGetter(widget.audioFile.content)
-                      ),
+                          child: photoGetter(widget.audioFile.content)),
                       // title: Text(
                       //   widget.audioFile.name,
                       //   style: TextStyle(color: Colors.black),
