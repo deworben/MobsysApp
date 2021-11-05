@@ -199,9 +199,9 @@ class FirebaseService {
       // Get datetime 24 hours ago
       var yesterday = now.subtract(Duration(days: 1));
 
-      // fromTime hours before,
-      // Get all the documents that are between ti and i+1hr.
-      // Count this and put it in the list.
+      // For every hour fromTime, starting 24 hours before,
+      //  Get all the documents that are between fromTime and fromTime+1hr.
+      //  Count this and put it in the list.
       int counter = 0;
       for (DateTime fromTime = yesterday;
           fromTime.isBefore(now);
