@@ -138,7 +138,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Color(0xFF543884),
+                            Color(0xFFCB92FF),
                             Colors.white,
                           ],
                         )
@@ -179,10 +179,20 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                         padding: EdgeInsets.all(10),
                                         child: Column(
                                           children: [
+
+                                            SizedBox(height: 10),
+
                                             Divider(
-                                              color: Colors.black,
+                                              color: Color(0xFF543884),
+                                              // color: Colors.black,
                                               thickness: 2,
+                                              indent: 10,
+                                              endIndent: 10,
                                             ),
+
+                                            SizedBox(height: 0),
+
+
                                             descriptorTextRow(),
 
                                             SizedBox(height: 15),
@@ -190,7 +200,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                             forwardBackPlay(updateSelf),
                                             scrubber(),
 
-                                            SizedBox(height: 20),
+                                            SizedBox(height: 25),
 
                                             transcript(),
 
@@ -311,25 +321,11 @@ class _AudioPlayerState extends State<AudioPlayer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("gps location",
+              Text("",
                   style: TextStyle(
                       color: Colors.grey[800],
                       // fontWeight: FontWeight.bold,
                       fontSize: 20)),
-
-
-              // Text("Fudge me sideways",
-              //     style: TextStyle(
-              //         color: Colors.grey[800],
-              //         fontWeight: FontWeight.bold,
-              //         fontSize: 20)),
-
-              SizedBox(height: 10),
-              // Text("Laugh Detection",
-              //     style: TextStyle(
-              //         color: Colors.grey[800],
-              //         fontWeight: FontWeight.bold,
-              //         fontSize: 20)),
             ],
           ),
         )
@@ -364,8 +360,11 @@ class _AudioPlayerState extends State<AudioPlayer> {
               }
               setState(() {});
             },
-            activeColor: Colors.grey,
-            inactiveColor: Colors.grey,
+
+            // activeColor: Color(0xFFCB92FF),
+            activeColor: Color(0xFF543884),
+            // activeColor: Colors.grey,
+            inactiveColor: Colors.black12,
           );
         });
   }
