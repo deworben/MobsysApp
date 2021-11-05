@@ -155,11 +155,22 @@ class _AudioPlayerState extends State<AudioPlayer> {
                               : const Text("Nothing playing", textAlign: TextAlign.center),
                           Row(
                             children: [
+                              IconButton(
+                                onPressed: () {
+                                  LaughDetectionController.skipPrevAudioFile();
+                                  // updateSelf(() {});
+                                  setState(() {});
+                                },
+                                icon: Icon(
+                                  Icons.skip_previous,
+                                  size: 30,
+                                ),
+                              ),
                               // play/pause icon button
                               IconButton(
                                 onPressed: () {
                                   playPauseButtonPressed();
-                                  updateSelf(() {});
+                                  // updateSelf(() {});
                                   setState(() {});
                                 },
                                 icon: LaughDetectionController.isPlaying.value
@@ -173,7 +184,18 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                 ),
                               ),
                               // play next icon button
-                              nextButton(),
+                              IconButton(
+                                onPressed: () {
+                                  LaughDetectionController.skipNextAudioFile();
+                                  // updateSelf(() {});
+                                  setState(() {});
+                                },
+                                icon: Icon(
+                                  Icons.skip_next,
+                                  size: 30,
+                                ),
+                              ),
+                              // play prev icon button
                             ],
                           ),
                           scrubber(),
@@ -271,29 +293,29 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
   }
 
-  Widget nextButton() {
-    return IconButton(
-      onPressed: () {
-        LaughDetectionController.skipNextAudioFile();
-      },
-      icon: Icon(
-        Icons.skip_next,
-        size: 30,
-      ),
-    );
-  }
+  // Widget nextButton() {
+  //   return IconButton(
+  //     onPressed: () {
+  //       LaughDetectionController.skipNextAudioFile();
+  //     },
+  //     icon: Icon(
+  //       Icons.skip_next,
+  //       size: 30,
+  //     ),
+  //   );
+  // }
 
-  Widget prevButton() {
-    return IconButton(
-      onPressed: () {
-        LaughDetectionController.skipPrevAudioFile();
-      },
-      icon: Icon(
-        Icons.skip_previous,
-        size: 30,
-      ),
-    );
-  }
+  // Widget prevButton() {
+  //   return IconButton(
+  //     onPressed: () {
+  //       LaughDetectionController.skipPrevAudioFile();
+  //     },
+  //     icon: Icon(
+  //       Icons.skip_previous,
+  //       size: 30,
+  //     ),
+  //   );
+  // }
 
   Future<void> playPauseButtonPressed() async {
     // setState(() {

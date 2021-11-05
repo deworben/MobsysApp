@@ -90,6 +90,7 @@ class LaughDetectionController {
     // return true;
   }
 
+  // Returns and plays a new audioFile with an updated filepath
   static Future<bool> playAudioFile(AudioFile audioFile) async {
     // can't play audio while recording
     if (isRecording.value) {
@@ -99,31 +100,54 @@ class LaughDetectionController {
       return false;
     }
 
-    if (isPlaying.value) {
+    if (isPlaying.value || _laughDetector.isPaused()) {
       await _laughDetector.stopPlayback();
     }
 
-    if (audioFile.filePath == null ) {
+
+    AudioFile _newAudioFile = AudioFile.clone(audioFile);
+
+
+
+    if (_newAudioFile.filePath == null ) {
       var tempDir = await getTemporaryDirectory();
       var filePath = '${tempDir.path}/${audioFile.id}.pcm';
       var outFile = File(filePath);
       if (outFile.existsSync()) {
-        audioFile.filePath = filePath;
+        _newAudioFile.filePath = filePath;
       }
       else {
-        audioFile = await fbService.downloadFile(audioFile.id);
+        _newAudioFile = await fbService.downloadFile(audioFile.id);
       }
     }
+    logger.e(audioFile.filePath);
+    logger.e(_newAudioFile.filePath);
+    logger.e(audioFile.id);
+    logger.e(_newAudioFile.id);
+    // print(Directory("${tempDir.path}")).list
+
+    // update list with new audioFile
+    // for (int i=0; i < audioFiles.value.length; i++) {
+    //   // check if id is the same
+    //   if (_newAudioFile.id == audioFiles.value[i].id) {
+    //     // update lists with new _audioFile
+    //     audioFiles.value[i] = _newAudioFile;
+    //     audioFiles.value = List.from(audioFiles.value);
+    //     sortAudioList(_sortBy);
+    //     break;
+    //   }
+    // }
+
 
 
 
     // check if need to update current audio file
-    if (currAudioFile.value != audioFile) {
-      currAudioFile.value = audioFile;
+    if (currAudioFile.value == null || currAudioFile.value!.id != _newAudioFile.id) {
+      currAudioFile.value = _newAudioFile;
     }
 
     isPlaying.value = true;
-    await _laughDetector.startPlayback(audioFile.filePath!, onComplete);
+    await _laughDetector.startPlayback(_newAudioFile.filePath!, onComplete);
 
     return true;
   }
