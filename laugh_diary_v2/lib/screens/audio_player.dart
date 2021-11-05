@@ -87,7 +87,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                           fontWeight: FontWeight.bold),
                                     ),
                               SizedBox(height: 5),
-                              Text("Tims iPhone",
+                              Text("Select a laugh in gallery to play.",
                                   style: TextStyle(
                                     color: Colors.grey[800],
                                   )),

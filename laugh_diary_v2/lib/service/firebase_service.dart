@@ -185,8 +185,8 @@ class FirebaseService {
     return List.from(audioFileList);
   }
 
-  List<int> getNumLaughsPerHourOverLastDay() {
-    List<int> numLaughsPerHourOverLastDay = [];
+  List<double> getNumLaughsPerHourOverLastDay() {
+    List<double> numLaughsPerHourOverLastDay = [];
     FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
@@ -221,7 +221,7 @@ class FirebaseService {
         });
 
         // Add numLaughs to the list
-        numLaughsPerHourOverLastDay.add(numLaughs);
+        numLaughsPerHourOverLastDay.add(numLaughs.toDouble());
       }
 
       // print("numLaughsPerHourOverLastDay = ${numLaughsPerHourOverLastDay}");
