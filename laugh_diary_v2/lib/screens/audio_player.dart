@@ -38,6 +38,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
 
   Widget bottomBarView(context) {
     return Container(
+      // color: Colors.black,
         padding: EdgeInsets.only(left: 0, right: 0, bottom: 0.0),
         child: Container(
           // shape: CircularNotchedRectangle(),
@@ -67,7 +68,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        FlutterLogo(),
+                        // FlutterLogo(),
                         SizedBox(width: 10),
                         Container(
                           padding: EdgeInsets.only(top: 10.0),
@@ -108,7 +109,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
           ),
           // color: Colors.blue,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondary,
+            color: Colors.red,// Theme.of(context).colorScheme.secondary,
             // color: Colors.white,
             border: Border.all(
               color: Colors.white30,
@@ -135,6 +136,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                     child: Column(
                       children: [
                         AppBar(
+                          backgroundColor: Colors.green,
                             leading: IconButton(
                           onPressed: () {
                             setState(() {
