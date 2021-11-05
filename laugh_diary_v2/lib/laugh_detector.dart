@@ -282,7 +282,7 @@ class LaughDetector {
   }
 
   Future<void> stopPlayback() async {
-    if (!playerOpened || !player!.isPlaying) {
+    if (!playerOpened || player!.isStopped) {
       return;
     }
     await player!.stopPlayer();
