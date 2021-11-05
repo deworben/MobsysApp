@@ -139,7 +139,7 @@ class FirebaseService {
       // If not, download it
       try {
         String downloadURL = await firebase_storage.FirebaseStorage.instance
-            .ref('/${id}.pcm')
+            .ref('/${id}')
             .getDownloadURL();
 
         print("downloadURL: $downloadURL");

@@ -310,4 +310,11 @@ class LaughDetector {
     await player!.resumePlayer();
     return true;
   }
+
+  bool isPaused() {
+    if (!playerOpened || player!.isStopped) {
+      return false;
+    }
+    return player!.isPaused;
+  }
 }
