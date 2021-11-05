@@ -7,7 +7,7 @@ class AudioFile {
 
   DateTime date;
 
-  Duration duration;
+  Duration? duration;
 
   String content;
 
@@ -20,6 +20,20 @@ class AudioFile {
 
   AudioFile(this.id, this.date, this.duration, this.content, [this.filePath]) {
     name = id;
+  }
+
+  // @override
+  // bool operator ==(other) {
+  //   return (other is AudioFile)
+  //       && other.id == id;
+  // }
+
+  static AudioFile clone(AudioFile other) {
+    AudioFile a = AudioFile(other.id, other.date, other.duration, other.content, other.filePath);
+    a.favourite = other.favourite;
+    a.coverImageUrl = other.coverImageUrl;
+    a.name = other.name;
+    return a;
   }
 
   void setName(String name) {

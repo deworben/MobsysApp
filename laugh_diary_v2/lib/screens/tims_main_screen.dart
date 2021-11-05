@@ -37,7 +37,7 @@ class _timsMainScreenState extends State<timsMainScreen> {
                 index: _selectedIndex,
                 children: _pages, // use the RecordButton widget
               ),
-              margin: const EdgeInsets.only(bottom: 45),
+              margin: const EdgeInsets.only(bottom: 65),
             ),
             const AudioPlayer(),
           ],
@@ -45,7 +45,7 @@ class _timsMainScreenState extends State<timsMainScreen> {
           alignment: AlignmentDirectional.bottomStart,
           // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         ),
-        backgroundColor: Colors.yellow,
+        backgroundColor: const Color(0xFFF5F5F5),
         bottomNavigationBar: bottomBar(),
       ),
     );
@@ -62,12 +62,12 @@ class _timsMainScreenState extends State<timsMainScreen> {
         iconSize: 24,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.graphic_eq),
             label: "Record",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: "Your Library",
+            icon: Icon(Icons.collections_bookmark_rounded),
+            label: "Gallery",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),

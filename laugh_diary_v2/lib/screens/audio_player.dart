@@ -364,17 +364,29 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
   }
 
-  Widget prevButton() {
-    return IconButton(
-      onPressed: () {
-        LaughDetectionController.skipPrevAudioFile();
-      },
-      icon: Icon(
-        Icons.skip_previous,
-        size: 30,
-      ),
-    );
-  }
+  // Widget nextButton() {
+  //   return IconButton(
+  //     onPressed: () {
+  //       LaughDetectionController.skipNextAudioFile();
+  //     },
+  //     icon: Icon(
+  //       Icons.skip_next,
+  //       size: 30,
+  //     ),
+  //   );
+  // }
+
+  // Widget prevButton() {
+  //   return IconButton(
+  //     onPressed: () {
+  //       LaughDetectionController.skipPrevAudioFile();
+  //     },
+  //     icon: Icon(
+  //       Icons.skip_previous,
+  //       size: 30,
+  //     ),
+  //   );
+  // }
 
   Future<void> playPauseButtonPressed() async {
     // setState(() {
