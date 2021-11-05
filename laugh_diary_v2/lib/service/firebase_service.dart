@@ -1,22 +1,15 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:laugh_diary_v2/objects/audio_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_core/firebase_core.dart' as firebase_core;
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 
 class FirebaseService {
-  // TODO: make singleton at the start
-  // Future<firebase_core.FirebaseApp> initialization = firebase_core.Firebase.initializeApp();
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseService() {}
 
@@ -27,20 +20,16 @@ class FirebaseService {
     var localFilepath = '${tempDir.path}/${audioFile.id}';
 
     // Upload firebase metadata to firebase
-    FirebaseFirestore.instance
+    var ref = await FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
-        .collection('audio')
-        .add({
+        .collection('audio');
+    ref.doc(audioFile.id).set({
       'id': audioFile.id,
       'name': audioFile.name,
-      'content': 'None str',
+      'content': audioFile.content,
       'datetime': Timestamp.fromDate(DateTime.now()),
-      'filePath': localFilepath
     });
-    print("**************************************************");
-    print("Bro they want me to upload: ${audioFile.filePath}");
-    print("**************************************************");
 
     // Upload the file to firebase
     // var allFiles = Directory("${tempDir.path}")
@@ -68,7 +57,7 @@ class FirebaseService {
       await storage.ref(audioFile.id).putFile(file, metadata);
     } on firebase_core.FirebaseException catch (e) {
       // e.g, e.code == 'canceled'
-      print("Exception occurred when uploading! $e");
+      print("FirebaseException occurred when uploading! $e");
     } catch (e) {
       print("Exception occurred when uploading! $e");
     }
@@ -111,67 +100,64 @@ class FirebaseService {
     var tempDir = await getTemporaryDirectory();
     var localFilepath = '${tempDir.path}/${id}.pcm';
 
-    DateTime dt;
-
     // var file = File(localFilepath).delete(); // Delete the file for debugging
 
     // Download document data from firebase
+    var _localDatetime = DateTime(2021, 9, 7, 17, 5);
+    var _localId = '12345';
+    var _localDuration = Duration(seconds: 1000);
+    var _localContent = 'None str';
+
     // FirebaseFirestore.instance.collection('users').snapshots()
     FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
         .collection('audio')
-        .doc('randomFile')
+        .doc(id)
         .get()
         .then((doc) {
       if (doc.exists) {
         print('Document data: ${doc.data}');
         //TODO: Check the document data is valid
-
-        //TODO: use the document constructor to create a new AudioFile object
-        var dateTimeString = doc.data()!['datetime'];
-        dt = DateTime.parse(dateTimeString);
-        print(dt); // 2020-01-02 03:04:05.000
-
+        if (doc.data() != null) {
+          var _localId = doc.data()!['id'];
+          var _localDatetime =
+              DateTime.parse(doc.data()!['datetime'].toDate().toString());
+          var _localDuration = doc.data()!['duration'];
+          var _localContent = doc.data()!['content'];
+          var _localFilepath = '${tempDir.path}/${id}.pcm';
+        }
       } else {
         print('No such document! = ${id}');
       }
     });
 
     // First check if the file id exists locally and if it does, don't download it again
-    // if (await File(localFilepath).exists()) {
-    //   print("File already exists locally");
-    //   return AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
-    //       "Content", localFilepath);
-    // }
+    if (await File(localFilepath).exists()) {
+      print("File already exists locally"); //do nothing
+    } else {
+      // If not, download it
+      try {
+        String downloadURL = await firebase_storage.FirebaseStorage.instance
+            .ref('/${id}.pcm')
+            .getDownloadURL();
 
-    // If not, download it
-    try {
-      String downloadURL = await firebase_storage.FirebaseStorage.instance
-          .ref('/${id}.pcm')
-          .getDownloadURL();
+        print("downloadURL: $downloadURL");
 
-      print("downloadURL: $downloadURL");
+        await downloadFromURL(downloadURL, localFilepath);
+      } catch (e) {
+        print("Exception occurred when downloading! $e");
+      }
 
-      await downloadFromURL(downloadURL, localFilepath);
-    } catch (e) {
-      print("Exception occurred when downloading! $e");
+      print("download complete");
     }
-
-    print("download complete");
-
-    return AudioFile(id, DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
-        "Content", localFilepath);
+    return AudioFile(
+        _localId, _localDatetime, _localDuration, _localContent, localFilepath);
   }
 
-  /// sortby is a string: "none", "date", "duration" ...
-  /// filterby is a string: "none", "keyword", "favourite" ...
-  /// keyowords is a string: a user provided keyword
-  /// count is the number of results
-  /// returns a list of ids.
   Future<List<AudioFile>> listFiles() async {
     List audioFileList = [];
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('users')
         .doc('tim')
         .collection('audio')
@@ -197,11 +183,5 @@ class FirebaseService {
 
     print("Final output = ${List.from(audioFileList)}");
     return List.from(audioFileList);
-    // return List.from([
-    //   AudioFile("ID", DateTime(2021, 9, 7, 18, 5), Duration(seconds: 1000),
-    //       "Content", "localFilepath"),
-    //   AudioFile("id", DateTime(2021, 9, 7, 17, 5), Duration(seconds: 1000),
-    //       "Content", "localFilepath")
-    // ]);
   }
 }

@@ -4,7 +4,6 @@ import '../objects/audio_file.dart';
 import '../static/laugh_detection_controller.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
-
 class AudioPlayer extends StatefulWidget {
   const AudioPlayer({Key? key}) : super(key: key);
 
@@ -15,11 +14,7 @@ class AudioPlayer extends StatefulWidget {
 class _AudioPlayerState extends State<AudioPlayer> {
   AudioFile? _audioFile;
 
-  // AudioFile audioFile = AudioFile("This is a filepath", DateTime(2017, 9, 7, 17, 17), Duration(seconds: 100),);
-
-  bool _isMinimised = true;
-
-  double _mSubscriptionDuration = 0;
+  // bool _isMinimised = true;
 
   bool _isPlaying = false;
 
@@ -33,52 +28,96 @@ class _AudioPlayerState extends State<AudioPlayer> {
               valueListenable: LaughDetectionController.isPlaying,
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
-                return _isMinimised ? bottomBarView() : fullScreenView();
+                return bottomBarView(context);
+                // return _isMinimised ? bottomBarView() : fullScreenView();
               });
         });
   }
 
-  Widget bottomBarView() {
+  Widget bottomBarView(context) {
     return Container(
-      // shape: CircularNotchedRectangle(),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              child: GestureDetector(
-                onTap: () {setState(() {_isMinimised = false;});},
-                child: Row(
-                  children: [
-                    FlutterLogo(),
-                    _audioFile != null
-                        ? Text(_audioFile!.name)
-                        : const Text("Nothing playing"),
-                  ],
+        padding: EdgeInsets.only(left: 0, right: 0, bottom: 0.0),
+        child: Container(
+          // shape: CircularNotchedRectangle(),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        // _isMinimised = false;
+
+                        // Navigator.push(context,
+                        //     MaterialPageRoute(
+                        //         builder:
+                        //     ));
+
+                        showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            useRootNavigator: true,
+                            builder: (context) {
+                              return fullScreenView(context);
+                            });
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        SizedBox(width: 10),
+                        FlutterLogo(),
+                        SizedBox(width: 10),
+                        Container(
+                          padding: EdgeInsets.only(top: 10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _audioFile != null
+                                  ? Text(_audioFile!.name,
+                                      style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontWeight: FontWeight.bold))
+                                  : Text(
+                                      "Nothing playing",
+                                      style: TextStyle(
+                                          color: Colors.grey[900],
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                              SizedBox(height: 5),
+                              Text("Tims iPhone",
+                                  style: TextStyle(
+                                    color: Colors.grey[800],
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    behavior: HitTestBehavior.translucent,
+                  ),
+                  height: 60,
                 ),
-                behavior: HitTestBehavior.translucent,
               ),
-              height: 40,
+              Container(
+                child: playPauseButton(),
+                height: 40,
+              ),
+            ],
+          ),
+          // color: Colors.blue,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondary,
+            // color: Colors.white,
+            border: Border.all(
+              color: Colors.white30,
             ),
+            // borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
-          Container(
-            child: playPauseButton(),
-            height: 40,
-          ),
-        ],
-      ),
-      // color: Colors.blue,
-      decoration:  BoxDecoration(
-        color: Colors.red,
-        border: Border.all(
-          color: Colors.red,
-        ),
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-      ),
-    );
+        ));
   }
 
   // TODO: cover bottom app bar?
-  Widget fullScreenView() {
+  Widget fullScreenView(context) {
     return Container(
       child: Column(
         children: [
@@ -86,7 +125,8 @@ class _AudioPlayerState extends State<AudioPlayer> {
               leading: IconButton(
             onPressed: () {
               setState(() {
-                _isMinimised = true;
+                Navigator.pop(context);
+                // _isMinimised = true;
               });
             },
             icon: const Icon(Icons.keyboard_arrow_down_rounded),
@@ -100,15 +140,17 @@ class _AudioPlayerState extends State<AudioPlayer> {
                       textAlign: TextAlign.center,
                     )
                   : const Text("Nothing playing", textAlign: TextAlign.center),
-              playPauseButton(60),
-              scrubber(),
               Row(
-                  children: [
-                    coverPhoto(),
-                    transcript(),
-                  ],
-                  mainAxisAlignment : MainAxisAlignment.center
+                children: [
+                  playPauseButton(60),
+                  nextButton(),
+                ],
               ),
+              scrubber(),
+              Row(children: [
+                coverPhoto(),
+                transcript(),
+              ], mainAxisAlignment: MainAxisAlignment.center),
             ],
             mainAxisAlignment: MainAxisAlignment.center,
           )),
@@ -121,25 +163,28 @@ class _AudioPlayerState extends State<AudioPlayer> {
 
   Widget scrubber() {
     return ValueListenableBuilder<PlaybackDisposition?>(
-      valueListenable: LaughDetectionController.audioDisposition,
-      builder: (BuildContext context, PlaybackDisposition? _audioDisposition, Widget? child)
-      {
-        return Slider(
-          // value: _audioDisposition!.position.inMilliseconds.toDouble(),
-          value: _audioDisposition!=null ? _audioDisposition.position.inMilliseconds.toDouble() : 0.0,
-          min: 0.0,
-          // max: _audioDisposition!.duration.inMilliseconds.toDouble(),
-          max: _audioDisposition!=null ? _audioDisposition.duration.inMilliseconds.toDouble() : 1000.0,
-          onChanged: (d) async {
-            // seek
-            await LaughDetectionController.seek(d);
-            setState(() {});
+        valueListenable: LaughDetectionController.audioDisposition,
+        builder: (BuildContext context, PlaybackDisposition? _audioDisposition,
+            Widget? child) {
+          return Slider(
+            // value: _audioDisposition!.position.inMilliseconds.toDouble(),
+            value: _audioDisposition != null
+                ? _audioDisposition.position.inMilliseconds.toDouble()
+                : 0.0,
+            min: 0.0,
+            // max: _audioDisposition!.duration.inMilliseconds.toDouble(),
+            max: _audioDisposition != null
+                ? _audioDisposition.duration.inMilliseconds.toDouble()
+                : 1000.0,
+            onChanged: (d) async {
+              // seek
+              await LaughDetectionController.seek(d);
+              setState(() {});
             },
-          activeColor: Colors.white,
-          inactiveColor: Colors.white24,
-        );
-      }
-      );
+            activeColor: Colors.white,
+            inactiveColor: Colors.white24,
+          );
+        });
   }
 
   Widget transcript() {
@@ -148,8 +193,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
         child: Text("Transcript: " + (_audioFile!.content),
             style: TextStyle(fontSize: 15)),
       );
-    }
-    else {
+    } else {
       // return empty widget
       return SizedBox.shrink();
     }
@@ -160,8 +204,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
       return Container(
         child: FlutterLogo(),
       );
-    }
-    else {
+    } else {
       // return empty widget
       return SizedBox.shrink();
     }
@@ -184,9 +227,32 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
   }
 
-  void playPauseButtonPressed() {
-    setState(() {
-      LaughDetectionController.audioPlayPausePressed();
-    });
+  Widget nextButton() {
+    return IconButton(
+      onPressed: () {
+        LaughDetectionController.skipNextAudioFile();
+      },
+      icon: Icon(
+        Icons.skip_next,
+        size: 30,
+      ),
+    );
+  }
+
+  Widget prevButton() {
+    return IconButton(
+      onPressed: () {
+        LaughDetectionController.skipPrevAudioFile();
+      },
+      icon: Icon(
+        Icons.skip_previous,
+        size: 30,
+      ),
+    );
+  }
+
+  Future<void> playPauseButtonPressed() async {
+    await LaughDetectionController.audioPlayPausePressed();
+    setState(() {});
   }
 }

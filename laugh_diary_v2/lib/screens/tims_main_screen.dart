@@ -1,26 +1,18 @@
 import 'package:flutter/material.dart';
-import '../route_generator.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
 import 'audio_recorder.dart';
-import 'package:flutter_cache_manager_firebase/flutter_cache_manager_firebase.dart';
 import 'audio_files.dart';
 import 'audio_player.dart';
 import 'dashboard.dart';
 
-
 class timsMainScreen extends StatefulWidget {
- @override
- _timsMainScreenState createState() => _timsMainScreenState();
+  @override
+  _timsMainScreenState createState() => _timsMainScreenState();
 
- //State<_timsMainScreen> createState() => _timsMainScreen();
+  //State<_timsMainScreen> createState() => _timsMainScreen();
 }
 
 //class _MyAppState extends State<MyApp> {
 class _timsMainScreenState extends State<timsMainScreen> {
-
   //TODO: save int to cache to save state when closing app
   // Current open page
   int _selectedIndex = 0;
@@ -41,19 +33,17 @@ class _timsMainScreenState extends State<timsMainScreen> {
         body: Stack(
           children: [
             Container(
-              child:
-              IndexedStack(
+              child: IndexedStack(
                 index: _selectedIndex,
-                children: _pages,      // use the RecordButton widget
+                children: _pages, // use the RecordButton widget
               ),
               margin: const EdgeInsets.only(bottom: 45),
             ),
-            AudioPlayer(),
+            const AudioPlayer(),
           ],
           // mainAxisAlignment: MainAxisAlignment.end,
           alignment: AlignmentDirectional.bottomStart,
           // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
         ),
         backgroundColor: Colors.yellow,
         bottomNavigationBar: bottomBar(),
@@ -65,12 +55,12 @@ class _timsMainScreenState extends State<timsMainScreen> {
   // Bottom bar and functionality
   Widget bottomBar() {
     return BottomNavigationBar(
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.yellow,
-        unselectedItemColor: Colors.white,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
         elevation: 8.0,
         iconSize: 24,
-        items: const<BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "Record",
@@ -89,10 +79,6 @@ class _timsMainScreenState extends State<timsMainScreen> {
           setState(() {
             _selectedIndex = index;
           });
-        }
-    );
+        });
   }
-
 }
-
-

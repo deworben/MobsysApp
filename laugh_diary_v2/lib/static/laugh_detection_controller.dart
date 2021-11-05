@@ -22,6 +22,7 @@ class LaughDetectionController {
   static var currAudioFile = ValueNotifier<AudioFile?>(null);
   static var audioFiles = ValueNotifier<List<AudioFile>>([]);
   static var fbService = FirebaseService();
+  static var sortedAudioFiles = ValueNotifier<List<AudioFile>>([]);
 
   // Recorder notifier
   static var isRecording = ValueNotifier<bool>(false);
@@ -32,10 +33,13 @@ class LaughDetectionController {
   static final _laughDetector = LaughDetector();
   static bool initialised = false;
 
-  static void setCurrAudioFile(AudioFile audioFile) {
-    // TODO: can load from cache and begin audio Playback
-    currAudioFile.value = audioFile;
-  }
+  // current filter for filteredFiles
+  static SortBy _sortBy = SortBy.all;
+
+  // static void setCurrAudioFile(AudioFile audioFile) {
+  //   // TODO: can load from cache and begin audio Playback
+  //   currAudioFile.value = audioFile;
+  // }
 
   static void onComplete() {
     isPlaying.value = false;
@@ -56,10 +60,16 @@ class LaughDetectionController {
         currAudioFile.value!.filePath =
             (await fbService.downloadFile(currAudioFile.value!.id)).filePath;
       }
+      await _laughDetector.pausePlayback();
+      // await _laughDetector.stopPlayback();
+
+    } else {
+      // resume instead of start if able
+      if (await _laughDetector.resumePlayback()) {
+        return true;
+      }
       await _laughDetector.startPlayback(
           currAudioFile.value!.filePath!, onComplete);
-    } else {
-      await _laughDetector.stopPlayback();
     }
     return true;
   }
@@ -87,6 +97,96 @@ class LaughDetectionController {
     isPlaying.value = true;
     await _laughDetector.startPlayback(audioFile.filePath!, onComplete);
 
+    return true;
+  }
+
+  static void sortAudioList(SortBy sortBy) {
+    // save current sortBy
+    _sortBy = sortBy;
+    switch(sortBy) {
+      case SortBy.favourites: {
+        sortedAudioFiles.value = List.from(audioFiles.value.where((a) => a.favourite));
+        break;
+      }
+      case SortBy.name: {
+        audioFiles.value.sort((a, b) => a.name.compareTo(b.name));
+        sortedAudioFiles.value = List.from(audioFiles.value);
+        break;
+      }
+      // sort by date by default
+      default: {
+        audioFiles.value.sort((a, b) => a.date.compareTo(b.date));
+        sortedAudioFiles.value = List.from(audioFiles.value);
+        break;
+      }
+    }
+  }
+
+  static Future<bool> skipNextAudioFile() async {
+    // can't play audio while recording
+    if (isRecording.value) {
+      if (isPlaying.value) {
+        throw Exception("Should not be able to play audio while recording");
+      }
+      return false;
+    }
+    if (isPlaying.value) {
+      await _laughDetector.stopPlayback();
+    }
+
+    // check if there are audio files in list
+    if (sortedAudioFiles.value.isEmpty) {
+      currAudioFile.value = null;
+      return false;
+    }
+
+    for (var i=0; i < sortedAudioFiles.value.length; i++) {
+      // if found audio file in list
+      if (currAudioFile.value == sortedAudioFiles.value[i]) {
+        // if audio file isn't last item
+        if (i + 1 < sortedAudioFiles.value.length) {
+          // play next file in list
+          await playAudioFile(sortedAudioFiles.value[i+1]);
+          return true;
+        }
+      }
+    }
+    // just play the first item
+    await playAudioFile(sortedAudioFiles.value[0]);
+    return true;
+  }
+
+  static Future<bool> skipPrevAudioFile() async {
+    // can't play audio while recording
+    if (isRecording.value) {
+      if (isPlaying.value) {
+        throw Exception("Should not be able to play audio while recording");
+      }
+      return false;
+    }
+    if (isPlaying.value) {
+      await _laughDetector.stopPlayback();
+    }
+
+    // check if there are audio files in list
+    if (sortedAudioFiles.value.isEmpty) {
+      currAudioFile.value = null;
+      return false;
+    }
+
+    for (var i=0; i < sortedAudioFiles.value.length; i++) {
+      // if found audio file in list
+      if (currAudioFile.value == sortedAudioFiles.value[i]) {
+        // if audio file isn't first item
+        if (i > 0) {
+          // play prev file in list
+          await playAudioFile(sortedAudioFiles.value[i-1]);
+          return true;
+        }
+      }
+    }
+    // just play the last item
+    await playAudioFile(sortedAudioFiles.value[-1]);
     return true;
   }
 
@@ -134,6 +234,9 @@ class LaughDetectionController {
     // add to list
     audioFiles.value.add(newAudioFile);
     audioFiles.value = List.from(audioFiles.value);
+
+    // update filtered list
+    sortAudioList(_sortBy);
 
     // save last created audioFile
     lastSavedAudioFile.value = newAudioFile;

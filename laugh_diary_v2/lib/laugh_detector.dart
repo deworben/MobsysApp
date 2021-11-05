@@ -289,10 +289,11 @@ class LaughDetector {
     await player!.pausePlayer();
   }
 
-  Future<void> resumePlayback() async {
+  Future<bool> resumePlayback() async {
     if (!playerOpened || !player!.isPlaying) {
-      return;
+      return false;
     }
     await player!.resumePlayer();
+    return true;
   }
 }
