@@ -14,7 +14,7 @@ class AudioPlayer extends StatefulWidget {
 class _AudioPlayerState extends State<AudioPlayer> {
   AudioFile? _audioFile;
 
-  // bool _isMinimised = true;
+  bool _isMinimised = true;
 
   bool _isPlaying = false;
 
@@ -29,7 +29,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
               builder: (BuildContext context, bool _isPlaying, Widget? child) {
                 this._isPlaying = _isPlaying;
                 return bottomBarView(context);
-                // return _isMinimised ? bottomBarView() : fullScreenView();
+                // return _isMinimised ? bottomBarView(context) : fullScreenView(context);
               });
         });
   }
@@ -46,7 +46,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        // _isMinimised = false;
+                        _isMinimised = false;
 
                         // Navigator.push(context,
                         //     MaterialPageRoute(
@@ -118,6 +118,12 @@ class _AudioPlayerState extends State<AudioPlayer> {
 
   // TODO: cover bottom app bar?
   Widget fullScreenView(context) {
+    
+    return StatefulBuilder(
+        builder: (BuildContext context, StateSetter updateSelf) {
+
+
+    
     return Container(
       child: Column(
         children: [
@@ -142,7 +148,29 @@ class _AudioPlayerState extends State<AudioPlayer> {
                   : const Text("Nothing playing", textAlign: TextAlign.center),
               Row(
                 children: [
-                  playPauseButton(60),
+
+                  IconButton(
+                    onPressed: () {
+                      playPauseButtonPressed();
+                      updateSelf(() {});
+                      setState(() {});
+                    },
+                    icon: LaughDetectionController.isPlaying.value
+                        ? Icon(
+                      Icons.pause_circle_filled,
+                      size: 60,
+                    )
+                        : Icon(
+                      Icons.play_arrow,
+                      size: 60,
+                    ),
+                  ),
+
+
+                  // playPauseButton(60),
+
+
+
                   nextButton(),
                 ],
               ),
@@ -158,6 +186,9 @@ class _AudioPlayerState extends State<AudioPlayer> {
       ),
       // TODO: change colour to nice gradient
       color: Colors.blue,
+    );
+
+        }
     );
   }
 
@@ -214,6 +245,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
     return IconButton(
       onPressed: () {
         playPauseButtonPressed();
+        setState(() {});
       },
       icon: LaughDetectionController.isPlaying.value
           ? Icon(
@@ -252,6 +284,9 @@ class _AudioPlayerState extends State<AudioPlayer> {
   }
 
   Future<void> playPauseButtonPressed() async {
+    // setState(() {
+    //   LaughDetectionController.audioPlayPausePressed();
+    // });
     await LaughDetectionController.audioPlayPausePressed();
     setState(() {});
   }
