@@ -133,32 +133,46 @@ class _AudioPlayerState extends State<AudioPlayer> {
                 return StatefulBuilder(
                     builder: (BuildContext context, StateSetter updateSelf) {
                   return Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF543884),
+                            Colors.white,
+                          ],
+                        )
+                    ),
                     child: Column(
                       children: [
-                        AppBar(
-                          backgroundColor: Colors.green,
-                            leading: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              Navigator.pop(context);
-                              // _isMinimised = true;
-                            });
-                          },
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                        )),
+
+                        Container(
+                          child: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  Navigator.pop(context);
+                                });
+                              },
+                            icon: Icon(Icons.keyboard_arrow_down_rounded,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          padding: EdgeInsets.only(top: 40.0),
+                        ),
+
                         Container(
                             alignment: Alignment.topCenter,
-                            padding: EdgeInsets.only(top: 10.0),
+                            padding: EdgeInsets.only(top: 0.0),
                             child: Expanded(
                                 child: Column(
                               children: [
-                                SizedBox(height: 100),
+                                SizedBox(height: 40),
                                 topIconRow(),
                                 Container(
                                   padding: EdgeInsets.all(10.0),
                                   child: DecoratedBox(
                                     decoration: const BoxDecoration(
-                                        color: Colors.grey,
+                                        // color: Colors.white,
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(20))),
                                     child: Container(
@@ -167,31 +181,29 @@ class _AudioPlayerState extends State<AudioPlayer> {
                                           children: [
                                             Divider(
                                               color: Colors.black,
-                                              thickness: 5,
+                                              thickness: 2,
                                             ),
                                             descriptorTextRow(),
+
+                                            SizedBox(height: 15),
+
                                             forwardBackPlay(updateSelf),
                                             scrubber(),
-                                            Row(
-                                                children: [
-                                                  coverPhoto(),
-                                                  transcript(),
-                                                ],
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center),
+
+                                            SizedBox(height: 20),
+
+                                            transcript(),
+
                                             SizedBox(height: 10),
                                           ],
                                         )),
                                   ),
                                 ),
-                                Text("------- BOTTOM -------")
                               ],
                               mainAxisAlignment: MainAxisAlignment.center,
                             ))),
                       ],
                     ),
-                    // TODO: change colour to nice gradient
-                    color: Colors.white,
                   );
                 });
               });
@@ -204,30 +216,55 @@ class _AudioPlayerState extends State<AudioPlayer> {
         child: Container(
             alignment: Alignment.center,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+
+                SizedBox(
+                    width: 70,
+                    height: 70,
+                    child: Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.only(top: 0.0),
+                        child: IconButton(
+                          onPressed: () {
+                            LaughDetectionController.skipPrevAudioFile();
+                          },
+                          icon: Icon(
+                            Icons.skip_previous_rounded,
+                            size: 30,
+                          ),
+                        ))),
+
+                SizedBox(width: 35),
+
                 // play/pause icon button
                 SizedBox(
                   height: 70,
-                  child: IconButton(
-                    onPressed: () {
-                      playPauseButtonPressed();
-                      updateSelf(() {});
-                      setState(() {});
-                    },
-                    icon: LaughDetectionController.isPlaying.value
-                        ? Icon(
-                            Icons.pause_circle_filled,
-                            size: 60,
-                          )
-                        : Icon(
-                            Icons.play_arrow,
-                            size: 60,
-                          ),
-                  ),
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      child: IconButton(
+                        onPressed: () {
+                          playPauseButtonPressed();
+                          updateSelf(() {});
+                          setState(() {});
+                        },
+                        icon: LaughDetectionController.isPlaying.value
+                            ? Icon(
+                          Icons.pause_circle_filled,
+                          size: 60,
+                        )
+                            : Icon(
+                          Icons.play_circle_fill_rounded,
+                          size: 60,
+                        ),
+                      ),
+                    ),
+
                 ),
 
-                SizedBox(width: 50),
+                SizedBox(width: 35),
                 // play next icon button
                 SizedBox(
                     width: 70,
@@ -240,7 +277,7 @@ class _AudioPlayerState extends State<AudioPlayer> {
                             LaughDetectionController.skipNextAudioFile();
                           },
                           icon: Icon(
-                            Icons.skip_next,
+                            Icons.skip_next_rounded,
                             size: 30,
                           ),
                         ))),
@@ -274,17 +311,25 @@ class _AudioPlayerState extends State<AudioPlayer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Fudge me sideways",
+              Text("gps location",
                   style: TextStyle(
                       color: Colors.grey[800],
-                      fontWeight: FontWeight.bold,
+                      // fontWeight: FontWeight.bold,
                       fontSize: 20)),
+
+
+              // Text("Fudge me sideways",
+              //     style: TextStyle(
+              //         color: Colors.grey[800],
+              //         fontWeight: FontWeight.bold,
+              //         fontSize: 20)),
+
               SizedBox(height: 10),
-              Text("Laugh Detection",
-                  style: TextStyle(
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20)),
+              // Text("Laugh Detection",
+              //     style: TextStyle(
+              //         color: Colors.grey[800],
+              //         fontWeight: FontWeight.bold,
+              //         fontSize: 20)),
             ],
           ),
         )
@@ -326,15 +371,37 @@ class _AudioPlayerState extends State<AudioPlayer> {
   }
 
   Widget transcript() {
-    if (_audioFile != null) {
-      return Container(
-        child: Text("Transcript: " + (_audioFile!.content),
-            style: TextStyle(fontSize: 15)),
-      );
-    } else {
-      // return empty widget
-      return SizedBox.shrink();
-    }
+
+    return Container(
+      child: Column(
+        children: [
+          Container(
+            child: Text("TRANSCRIPT",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[800]
+              ),
+            ),
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(left: 0, right: 0, bottom: 0.0),
+          ),
+
+          SizedBox(height: 20),
+
+          Container(
+            child: Text(
+              _audioFile != null ? _audioFile!.content : "...no transcript available :(",
+                style: TextStyle(fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+            padding: EdgeInsets.only(left: 35, right: 35),
+          )
+        ],
+      ),
+    );
+
   }
 
   Widget coverPhoto() {
